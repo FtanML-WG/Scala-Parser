@@ -38,16 +38,4 @@ case class FtanArray(values: Seq[FtanValue]) extends FtanValue {
         throw new IllegalStateException("Given FtanArray isn't valid content for a FtanElement");
     }
   }
-
-  override def toJson(writer: Writer) {
-    writer.append("[")
-    if (values.size >= 1) {
-      values.head.toJson(writer);
-      for (element <- values.tail) {
-        writer.append(",")
-        element.toJson(writer)
-      }
-    }
-    writer.append("]");
-  }
 }

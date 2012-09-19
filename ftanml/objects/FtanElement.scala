@@ -55,27 +55,4 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
   }
 
   def toFtanMLContent(writer: Writer) = toFtanML(writer)
-
-  override def toJson(writer: Writer) {
-    def writeAttribute(attr:(FtanString,FtanValue)) {
-      attr._1.toJson(writer)
-      writer.append(":")
-      attr._2.toJson(writer)
-    }
-    
-    // Opening bracket
-    writer.append("{");
-
-    //Write all attributes
-    if (attributes.size >= 1) {
-      writeAttribute(attributes.head)
-      for (element <- attributes.tail) {
-        writer.append(",")
-        writeAttribute(element)
-      }
-    }
-
-    // Closing bracket
-    writer.append("}");
-  }
 }

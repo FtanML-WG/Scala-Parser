@@ -99,8 +99,4 @@ case class FtanString(value: String) extends FtanValue {
 
     writer.append(escapeContent);
   }
-
-  override def toJson(writer: Writer)  {
-    writer.append("\"" + escapedValue('"') + "\"");
-  }
 }
