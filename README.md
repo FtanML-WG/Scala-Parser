@@ -1,4 +1,4 @@
 ScalaParser
 ===========
 
-A FtanML parser written in Scala
+A FtanML parser written in Scala.
