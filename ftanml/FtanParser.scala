@@ -16,8 +16,8 @@ import ftanml.objects.FtanElement
 import scala.collection.mutable.LinkedHashMap
 
 class FtanParsers extends RegexParsers {
-  def _null: Parser[FtanNull] =
-    "null" ^^^ (FtanNull())
+  def _null: Parser[FtanNull.type] =
+    "null" ^^^ (FtanNull)
 
   def boolean: Parser[FtanBoolean] =
     ("true" | "false") ^^ {
@@ -54,10 +54,11 @@ class FtanParsers extends RegexParsers {
 
   def element: Parser[FtanElement] = {
     def attributes: Parser[LinkedHashMap[FtanString, FtanValue]] = {
-      def name: Parser[FtanString] =
+      def nameWithoutQuotes: Parser[FtanString] =
         "[a-zA-Z][a-zA-Z0-9:_]*".r ^^ {
           value => FtanString(value)
         }
+      def name: Parser[FtanString] = nameWithoutQuotes|string
       def pair: Parser[(FtanString, FtanValue)] =
         name ~ "=" ~ value ^^ {
           case name ~ sep ~ value => (name, value)
