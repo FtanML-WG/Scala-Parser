@@ -4,15 +4,19 @@ import java.io.Writer
 
 import scala.collection.mutable.LinkedHashMap
 
-object FtanElement {
+object FtanElement extends FtanElement(new LinkedHashMap[FtanString,FtanValue]) {
   val NAME_KEY = new FtanString("name")
   val CONTENT_KEY = new FtanString("content")
+  
+  def apply(attributes: (FtanString,FtanValue)*) = new FtanElement(attributes.toMap)
 }
 
 case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends FtanValue {
   import FtanElement._
+  
+  def this(attributes: Map[FtanString,FtanValue]) = this(new LinkedHashMap++=attributes)
 
-  override def toFtanML(writer: Writer) {
+  override def writeFtanML(writer: Writer) {
     var space_needed = false
 
     // Opening bracket
@@ -21,7 +25,7 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
     // Write name, if existing
     attributes.get(NAME_KEY) map {
       case string: FtanString =>
-        string.toFtanMLName(writer)
+        string.writeFtanMLName(writer)
         space_needed = true
       case _ =>
     }
@@ -36,9 +40,9 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
       case value: FtanValue =>
         if (space_needed)
           writer.append(" ")
-        key.toFtanMLName(writer)
+        key.writeFtanMLName(writer)
         writer.append("=")
-        value.toFtanML(writer)
+        value.writeFtanML(writer)
         space_needed = true
     }
 
@@ -46,7 +50,7 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
     attributes.get(CONTENT_KEY) map {
       case content: FtanArray if content.isValidElementContent =>
         writer.append("|")
-        content.toFtanMLContent(writer)
+        content.writeFtanMLContent(writer)
       case _ =>
     }
 
@@ -54,5 +58,28 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
     writer.append(">");
   }
 
-  def toFtanMLContent(writer: Writer) = toFtanML(writer)
+  def writeFtanMLContent(writer: Writer) = writeFtanML(writer)
+
+  override def writeJson(writer: Writer) {
+    def writeAttribute(attr:(FtanString,FtanValue)) {
+      attr._1.writeJson(writer)
+      writer.append(":")
+      attr._2.writeJson(writer)
+    }
+    
+    // Opening bracket
+    writer.append("{");
+
+    //Write all attributes
+    if (attributes.size >= 1) {
+      writeAttribute(attributes.head)
+      for (element <- attributes.tail) {
+        writer.append(",")
+        writeAttribute(element)
+      }
+    }
+
+    // Closing bracket
+    writer.append("}");
+  }
 }

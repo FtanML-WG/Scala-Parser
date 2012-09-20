@@ -2,7 +2,7 @@ package ftanml.objects
 
 import java.io.Writer
 
-object FtanString {
+object FtanString extends FtanString("") {
   def deescapeChar(input: String): Char = {
     if (input.length == 0)
       // TODO Correct exception class
@@ -65,7 +65,7 @@ case class FtanString(value: String) extends FtanValue {
     ("" /: value.map(escapeChar))(_ + _)
   }
 
-  override def toFtanML(writer: Writer) {
+  override def writeFtanML(writer: Writer) {
     //Calculate count of double quotation marks (") and single quotation marks (') in the string
     var numberDQuotes = 0;
     var numberSQuotes = 0;
@@ -83,14 +83,14 @@ case class FtanString(value: String) extends FtanValue {
 
   def isValidName = value.matches("[\\p{Alpha}][\\p{Alpha}\\p{Digit}_:]*")
 
-  override def toFtanMLName(writer: Writer) {
+  override def writeFtanMLName(writer: Writer) {
     if (isValidName)
       writer.append(value);
     else
-      toFtanML(writer);
+      writeFtanML(writer);
   }
 
-  def toFtanMLContent(writer: Writer) {
+  def writeFtanMLContent(writer: Writer) {
     val escapeContent =
       value
         .replaceAll("\\\\", "\\\\\\\\")
@@ -98,5 +98,9 @@ case class FtanString(value: String) extends FtanValue {
         .replaceAll("\\<", "\\\\<");
 
     writer.append(escapeContent);
+  }
+
+  override def writeJson(writer: Writer)  {
+    writer.append("\"" + escapedValue('"') + "\"");
   }
 }

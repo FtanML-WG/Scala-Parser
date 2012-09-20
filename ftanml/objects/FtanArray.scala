@@ -2,14 +2,21 @@ package ftanml.objects
 
 import java.io.Writer
 
+object FtanArray extends FtanArray(Nil) {
+  //There is at least one argument
+  def apply(first: FtanValue, rest: FtanValue*) = new FtanArray(first::rest.toList)
+  //zero argument case
+  def apply() = new FtanArray(Nil)
+}
+
 case class FtanArray(values: Seq[FtanValue]) extends FtanValue {
-  override def toFtanML(writer: Writer) {
+  override def writeFtanML(writer: Writer) {
     writer.append("[")
     if (values.size >= 1) {
-      values.head.toFtanML(writer);
+      values.head.writeFtanML(writer);
       for (element <- values.tail) {
         writer.append(",")
-        element.toFtanML(writer)
+        element.writeFtanML(writer)
       }
     }
     writer.append("]");
@@ -29,13 +36,25 @@ case class FtanArray(values: Seq[FtanValue]) extends FtanValue {
     return true
   }
 
-  def toFtanMLContent(writer: Writer) {
+  def writeFtanMLContent(writer: Writer) {
     values.foreach {
-      case string: FtanString => string.toFtanMLContent(writer)
-      case element: FtanElement => element.toFtanMLContent(writer)
+      case string: FtanString => string.writeFtanMLContent(writer)
+      case element: FtanElement => element.writeFtanMLContent(writer)
       case _ =>
         //TODO Correct exception class
         throw new IllegalStateException("Given FtanArray isn't valid content for a FtanElement");
     }
+  }
+
+  override def writeJson(writer: Writer) {
+    writer.append("[")
+    if (values.size >= 1) {
+      values.head.writeJson(writer);
+      for (element <- values.tail) {
+        writer.append(",")
+        element.writeJson(writer)
+      }
+    }
+    writer.append("]");
   }
 }
