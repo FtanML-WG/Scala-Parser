@@ -6,6 +6,10 @@ import ftanml.objects._
 import ftanml.FtanParser
 import ftanml.types._
 
+/**
+ * Unit tests for enumeration types
+ */
+
 class EnumerationTest extends FlatSpec {
 
   val parser = new FtanParser
@@ -34,13 +38,11 @@ class EnumerationTest extends FlatSpec {
 
   "Arrays" should "be instances of Enumeration Type" in {
     assert(FtanArray(FtanTrue, FtanFalse).isInstance(new EnumerationType(Seq(FtanArray(), FtanArray(parse("true"), parse("false"))))))
-
   }
 
   "Elements" should  "be instances of ElementType" in {
     assert(parse("<a b=1 c=2>").isInstance(new EnumerationType(
       Seq(FtanArray(), parse("<a c=2 b=1>")))))
-
   }
 
 

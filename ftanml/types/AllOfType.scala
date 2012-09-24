@@ -7,10 +7,9 @@ import ftanml.objects.FtanValue
  */
 
 class AllOfType (memberTypes : Seq[FtanType]) extends FtanType {
-  // TODO: no tests yet
-  def matches(value: FtanValue) = {
+  def matches(value: FtanValue) : Boolean = {
     for (f <- memberTypes) {
-      if (!f.matches(value)) false
+      if (!f.matches(value)) return false
     }
     true
   }
