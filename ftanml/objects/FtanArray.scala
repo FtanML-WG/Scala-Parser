@@ -33,7 +33,7 @@ case class FtanArray(values: Seq[FtanValue]) extends FtanValue {
       case element: FtanElement =>
       case _ => return false
     }
-    return true
+    true
   }
 
   def writeFtanMLContent(writer: Writer) {

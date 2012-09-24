@@ -5,17 +5,13 @@ import ftanml.objects.FtanNull
 import ftanml.objects.FtanBoolean
 import ftanml.objects.FtanNumber
 import ftanml.objects.FtanValue
-import java.io.InputStreamReader
-import scala.util.parsing.input.Reader
-import scala.util.parsing.input.StreamReader
-import scala.util.parsing.combinator.Parsers
 import scala.util.parsing.input.CharSequenceReader
 import ftanml.objects.FtanArray
 import ftanml.objects.FtanString
 import ftanml.objects.FtanElement
 import scala.collection.mutable.LinkedHashMap
 
-class FtanParsers extends RegexParsers {
+class FtanParser extends RegexParsers {
   def _null: Parser[FtanNull.type] =
     "null" ^^^ (FtanNull)
 
@@ -97,9 +93,9 @@ class FtanParsers extends RegexParsers {
 }
 
 object MyApp extends App {
-  val parser = new FtanParsers
+  val parser = new FtanParser
 
-  for (line <- io.Source.stdin.getLines) {
+  for (line <- io.Source.stdin.getLines()) {
     parser.value(new CharSequenceReader(line)) match {
       case parser.Success(result, rest) =>
         println(result.toFtanML)

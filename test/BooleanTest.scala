@@ -3,7 +3,7 @@ package test
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
-import ftanml.FtanParsers
+import ftanml.FtanParser
 import ftanml.objects.FtanBoolean
 
 class BooleanTest extends ParserTest with FlatSpec {

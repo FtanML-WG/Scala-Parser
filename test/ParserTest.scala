@@ -1,6 +1,6 @@
 package test
 
-import ftanml.FtanParsers
+import ftanml.FtanParser
 import scala.util.parsing.input.CharSequenceReader
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FlatSpec
@@ -13,7 +13,7 @@ trait ParserTest extends ShouldMatchers {
   self: Suite =>
     
   //Instantiate the parser
-  object TestParser extends FtanParsers {
+  object TestParser extends FtanParser {
     //Add an easy method for parsing a string
     def parsing(s: String): FtanValue = {
       //The phrase parser wrapper makes sure, that the whole input string is consumed

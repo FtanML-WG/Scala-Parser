@@ -58,7 +58,9 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
     writer.append(">");
   }
 
-  def writeFtanMLContent(writer: Writer) = writeFtanML(writer)
+  def writeFtanMLContent(writer: Writer) {
+    writeFtanML(writer)
+  }
 
   override def writeJson(writer: Writer) {
     def writeAttribute(attr:(FtanString,FtanValue)) {

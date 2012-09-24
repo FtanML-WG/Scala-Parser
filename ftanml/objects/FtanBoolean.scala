@@ -3,8 +3,12 @@ package ftanml.objects
 import java.io.Writer
 
 case class FtanBoolean(value: Boolean) extends FtanValue {
-  override def writeFtanML(writer: Writer) = writer.append(value.toString)
-  override def writeJson(writer: Writer) = writer.append(value.toString)
+  override def writeFtanML(writer: Writer) {
+    writer.append(value.toString)
+  }
+  override def writeJson(writer: Writer) {
+    writer.append(value.toString)
+  }
 }
 
 //Allow writing FtanTrue for FtanBoolean(true) and FtanFalse for FtanBoolean(false)

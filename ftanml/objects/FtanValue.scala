@@ -12,7 +12,9 @@ abstract class FtanValue {
     writer.toString
   }
 
-  protected def writeFtanMLName(writer: Writer) = writeFtanML(writer)
+  protected def writeFtanMLName(writer: Writer) {
+    writeFtanML(writer)
+  }
   
   def writeJson(writer: Writer)
   
