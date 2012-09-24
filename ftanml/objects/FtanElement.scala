@@ -84,4 +84,15 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
     // Closing bracket
     writer.append("}");
   }
+
+  override def equals(that: Any) =
+    that.isInstanceOf[FtanElement] &&
+      attributes.size == that.asInstanceOf[FtanElement].attributes.size &&
+      attributes.equals(that.asInstanceOf[FtanElement].attributes)
+
+
+  override def hashCode() : Int = {
+    attributes.hashCode()
+  }
+
 }

@@ -2,6 +2,7 @@ package ftanml.objects
 
 import java.io.StringWriter
 import java.io.Writer
+import ftanml.types.FtanType
 
 abstract class FtanValue {
   def writeFtanML(writer: Writer)
@@ -22,5 +23,9 @@ abstract class FtanValue {
     val writer = new StringWriter
     writeJson(writer)
     writer.toString
+  }
+
+  def isInstance (aType : FtanType) : Boolean = {
+    aType.matches(this)
   }
 }

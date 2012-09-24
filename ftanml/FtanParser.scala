@@ -90,6 +90,19 @@ class FtanParser extends RegexParsers {
 
   def value: Parser[FtanValue] =
     _null | boolean | number | string | array | element
+
+  def parse(exp : String) : FtanValue = {
+    this.value(new CharSequenceReader(exp)) match {
+      case Success(result, rest) =>
+        result
+      case Failure(msg, rest) =>
+        println("FAILURE: " + msg)
+        FtanNull
+      case Error(msg, rest) =>
+        println("ERROR: " + msg)
+        FtanNull
+    }
+  }
 }
 
 object MyApp extends App {
