@@ -36,9 +36,14 @@ class FixedValueTest extends FlatSpec {
   }
 
   "Strings" should "be instances of Fixed ValueType" in {
-    assert(FtanString("abcd").isInstance(new FixedValueType(FtanString("abcd"))))
-    assert(!FtanString("abcd").isInstance(new FixedValueType(FtanString("pqrs"))))
-    assert(new FixedValueType(FtanString("abcd")).matches(parse("\"abcd\"")))
+    assert(FtanString("abcd").isInstance(new FixedValueType(FtanString("abcd"))), "1")
+    assert(!FtanString("abcd").isInstance(new FixedValueType(FtanString("pqrs"))), "2")
+    assert(new FixedValueType(FtanString("abcd")).matches(parse("\"abcd\"")), "3")
+    assert(parse("\"\\x41;\"").isInstance(new FixedValueType(FtanString("A"))), "4")
+    assert(parse("\"\\x041;\"").isInstance(new FixedValueType(FtanString("A"))), "5")
+    assert(parse("\"\\x20ac;\"").isInstance(new FixedValueType(FtanString("\u20AC"))), "6")
+    assert(parse("\"\\xa;\"").isInstance(new FixedValueType(FtanString("\n"))), "7")
+    assert(parse("\"\\x2A6d6;\"").isInstance(new FixedValueType(FtanString("\uD869\uDED6"))), "8")
   }
 
   "Arrays" should "be instances of Fixed ArrayType" in {

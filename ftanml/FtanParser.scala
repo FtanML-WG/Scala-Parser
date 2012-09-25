@@ -25,8 +25,8 @@ class FtanParser extends RegexParsers {
       value => FtanNumber(value.toDouble)
     }
 
-  private def escapedCharacter: Parser[Char] =
-    "\\" ~> """[bfnrt<>"'\\/]|u[a-fA-F0-9]{4}""".r ^^ {
+  private def escapedCharacter: Parser[String] =
+    "\\" ~> """[bfnrt<>"'\\/]|u[a-fA-F0-9]{4}|x[a-fA-F0-9]+;""".r ^^ {
       value => FtanString.deescapeChar("\\" + value)
     }
 
