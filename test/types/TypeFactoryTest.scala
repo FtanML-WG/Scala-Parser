@@ -32,6 +32,8 @@ class TypeFactoryTest extends FlatSpec {
 
   var allType = TypeFactory.makeType(parse("<number enum=[1,2,3] fixed=2>"))
 
+  var minMaxType = TypeFactory.makeType(parse("<min=5 max=10>"))
+
   "Values" should "be instances of factory-made Types" in {
     assert(FtanBoolean(true).isInstance(booleanType), "0")
     assert(!FtanTrue.isInstance(allType), "2")
@@ -40,6 +42,10 @@ class TypeFactoryTest extends FlatSpec {
     assert(!FtanNumber(3).isInstance(allType), "5");
     assert(FtanString("").isInstance(anyType), "6");
     assert(anyType.matches(FtanString("")), "7")
+    assert(FtanNumber(5).isInstance(minMaxType), "8")
+    assert(FtanNumber(10).isInstance(minMaxType), "9")
+    assert(!FtanNumber(11).isInstance(minMaxType), "10")
+    assert(!FtanNumber(4).isInstance(minMaxType), "11")
   }
 
 

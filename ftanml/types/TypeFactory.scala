@@ -1,8 +1,7 @@
 package ftanml.types
 
-import java.util.ArrayList
-import ftanml.objects.{FtanArray, FtanString, FtanElement}
-import collection.mutable.{ListBuffer, LinkedList}
+import collection.mutable.ListBuffer
+import ftanml.objects.{FtanNumber, FtanArray, FtanString, FtanElement}
 
 /**
  * The TypeFactory constructs types from FtanML elements that describe the type
@@ -10,41 +9,50 @@ import collection.mutable.{ListBuffer, LinkedList}
 
 object TypeFactory {
 
+  val primitives = collection.immutable.HashMap (
+    "string" -> StringType,
+    "number" -> NumberType,
+    "boolean" -> BooleanType,
+    "array" -> ArrayType,
+    "element" -> ElementType
+  )
+
   def makeType(element : FtanElement) : FtanType = {
     val memberTypes = new ListBuffer[FtanType]();
     for (a <- element.attributes) {
       val name = a._1.value
       val value = a._2
-      if (name == FtanElement.NAME_KEY.value) {
-        val str = value.asInstanceOf[FtanString].value
-        if (str == "string") {
-          memberTypes += (StringType)
-        } else if (str == "number") {
-          memberTypes += (NumberType)
-        } else if (str == "boolean") {
-          memberTypes += (BooleanType)
-        } else if (str == "array") {
-          memberTypes += (ArrayType)
-        } else if (str == "element") {
-          memberTypes += (ElementType)
-        }
-      }
-      if (name == "fixed") {
-        memberTypes += (new FixedValueType(value))
-      } else if (name == "enum") {
-        memberTypes += (new EnumerationType(value.asInstanceOf[FtanArray].values));
-      } else if (name == "anyOf" || name == "allOf") {
-        val componentElements = value.asInstanceOf[FtanArray];
-        val componentTypes = new ListBuffer[FtanType];
-        for (t <- componentElements.values) {
-          val ct = t.asInstanceOf[FtanElement];
-          componentTypes += (makeType(ct));
-        }
-        if (name == "anyOf") {
-          memberTypes += (new AnyOfType(componentTypes))
-        } else {
-          memberTypes += (new AllOfType(componentTypes))
-        }
+      name match {
+        case FtanElement.NAME_KEY.value =>
+          val str = value.asInstanceOf[FtanString].value
+          primitives.get(str) match {
+            case Some(t) => memberTypes += t
+            case _ => sys.error ("Unknown primitive type " + str)
+          }
+        case "fixed" =>
+          memberTypes += new FixedValueType(value)
+        case "enum" =>
+          memberTypes += new EnumerationType(value.asInstanceOf[FtanArray].values)
+        case "min" =>
+          memberTypes += new MinValueType(value.asInstanceOf[FtanNumber])
+        case "max" =>
+          memberTypes += new MaxValueType(value.asInstanceOf[FtanNumber])
+        case "anyOf" =>
+          val componentElements = value.asInstanceOf[FtanArray];
+          val componentTypes = new ListBuffer[FtanType];
+          for (t <- componentElements.values) {
+            val ct = t.asInstanceOf[FtanElement];
+            componentTypes += (makeType(ct));
+          }
+          memberTypes += new AnyOfType(componentTypes)
+        case "allOf" =>
+          val componentElements = value.asInstanceOf[FtanArray];
+          val componentTypes = new ListBuffer[FtanType];
+          for (t <- componentElements.values) {
+            val ct = t.asInstanceOf[FtanElement];
+            componentTypes += (makeType(ct));
+          }
+          memberTypes += new AllOfType(componentTypes)
       }
     }
     if (memberTypes.size == 1) {
