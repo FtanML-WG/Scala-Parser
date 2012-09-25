@@ -37,6 +37,11 @@ object TypeFactory {
           memberTypes += new MinValueType(value.asInstanceOf[FtanNumber])
         case "max" =>
           memberTypes += new MaxValueType(value.asInstanceOf[FtanNumber])
+        case "not" =>
+          val base = value.asInstanceOf[FtanElement]
+          memberTypes += new ComplementType(makeType(base))
+        case "regex" =>
+          memberTypes += new RegexType(value.asInstanceOf[FtanString])
         case "anyOf" =>
           val componentElements = value.asInstanceOf[FtanArray];
           val componentTypes = new ListBuffer[FtanType];
