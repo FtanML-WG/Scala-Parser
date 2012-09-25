@@ -34,9 +34,13 @@ object TypeFactory {
         case "enum" =>
           memberTypes += new EnumerationType(value.asInstanceOf[FtanArray].values)
         case "min" =>
-          memberTypes += new MinValueType(value.asInstanceOf[FtanNumber])
+          memberTypes += new MinValueType(value.asInstanceOf[FtanNumber], false)
+        case "minExclusive" =>
+          memberTypes += new MinValueType(value.asInstanceOf[FtanNumber], true)
         case "max" =>
-          memberTypes += new MaxValueType(value.asInstanceOf[FtanNumber])
+          memberTypes += new MaxValueType(value.asInstanceOf[FtanNumber], false)
+        case "maxExclusive" =>
+          memberTypes += new MaxValueType(value.asInstanceOf[FtanNumber], true)
         case "not" =>
           val base = value.asInstanceOf[FtanElement]
           memberTypes += new ComplementType(makeType(base))
