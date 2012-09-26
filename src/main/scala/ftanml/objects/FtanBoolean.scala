@@ -2,6 +2,8 @@ package ftanml.objects
 
 import java.io.Writer
 
+object FtanBoolean extends FtanBoolean(false)
+
 case class FtanBoolean(value: Boolean) extends FtanValue {
   override def writeFtanML(writer: Writer) {
     writer.append(value.toString)
