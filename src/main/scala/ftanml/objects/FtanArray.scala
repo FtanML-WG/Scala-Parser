@@ -9,7 +9,7 @@ object FtanArray extends FtanArray(Nil) {
   def apply() = new FtanArray(Nil)
 }
 
-case class FtanArray(values: Seq[FtanValue]) extends FtanValue {
+case class FtanArray(values: Seq[FtanValue]) extends FtanValue with GetSize {
   override def writeFtanML(writer: Writer) {
     writer.append("[")
     if (values.size >= 1) {
@@ -57,4 +57,6 @@ case class FtanArray(values: Seq[FtanValue]) extends FtanValue {
     }
     writer.append("]");
   }
+  
+  def getSize = values.length
 }

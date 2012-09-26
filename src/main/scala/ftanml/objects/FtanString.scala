@@ -91,7 +91,7 @@ object FtanString extends FtanString("") {
   }
 }
 
-case class FtanString(value: String) extends FtanValue {
+case class FtanString(value: String) extends FtanValue with GetSize {
 
   private def escapedValue(usedQuote: Char): String = {
     def escapeChar(input: Char): String = input match {
@@ -149,4 +149,6 @@ case class FtanString(value: String) extends FtanValue {
   override def writeJson(writer: Writer)  {
     writer.append("\"" + escapedValue('"') + "\"");
   }
+  
+  def getSize = value.length
 }
