@@ -44,6 +44,12 @@ class FixedValueTest extends FlatSpec {
     assert(parse("\"\\x20ac;\"").isInstance(new FixedValueType(FtanString("\u20AC"))), "6")
     assert(parse("\"\\xa;\"").isInstance(new FixedValueType(FtanString("\n"))), "7")
     assert(parse("\"\\x2A6d6;\"").isInstance(new FixedValueType(FtanString("\uD869\uDED6"))), "8")
+    assert(parse("\"\\[?abcd?]\"").isInstance(new FixedValueType(FtanString("abcd"))), "9")
+    assert(parse("\"\\[**]\"").isInstance(new FixedValueType(FtanString(""))), "10")
+    assert(parse("\"\\[*<a>*]\"").isInstance(new FixedValueType(FtanString("<a>"))), "11")
+    assert(parse("\"\\[***]\"").isInstance(new FixedValueType(FtanString("*"))), "12")
+    assert(parse("\"\\[*]*]\"").isInstance(new FixedValueType(FtanString("]"))), "13")
+    assert(parse("\"\\[§\\<\\>§]\"").isInstance(new FixedValueType(FtanString("\\<\\>"))), "14")
   }
 
   "Arrays" should "be instances of Fixed ArrayType" in {
