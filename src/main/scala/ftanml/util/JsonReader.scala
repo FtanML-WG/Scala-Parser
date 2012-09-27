@@ -2,25 +2,28 @@ package ftanml.util
 
 import java.io.Reader
 import java.util.Stack
+import java.text.ParseException
 
 class JsonReader(base: Reader) extends Reader {
 	private var depthMapsArray = new Stack[Int] //0: Map, 1: Array (tried to do it with an enum but couldn't get that working
 	private var escaped = false
 	private var inString = false
+	private var offset = 0
 	
 	override def read: Int = {
 		val char = base.read
+		offset += 1
 		char match {
 			case '"' => if(!escaped) inString = !inString; '"'
 			case '\\' => if(inString) escaped = !escaped; '\\'
 			case _ if(inString) => char
 			case '{' => depthMapsArray.push(0); '<'
-			case '}' => assert(depthMapsArray.pop == 0, "Expected ], found }"); '>'
+			case '}' => if(depthMapsArray.pop == 0) throw new ParseException("Expected ], found }", offset-1); '>'
 			case '[' => depthMapsArray.push(1); '['
-			case ']' => assert(depthMapsArray.pop == 1, "Expected }, found ]"); ']'
+			case ']' => if(depthMapsArray.pop == 1) throw new ParseException("Expected }, found ]", offset-1); ']'
 			case ':' => '='
 			case ',' if(depthMapsArray.peek == 0) => read
-			case -1 => assert(depthMapsArray.size == 0, "End of file reached, but map or array unclosed"); -1
+			case -1 => if(depthMapsArray.size == 0) throw new ParseException("End of file reached, but map or array unclosed", offset-1); -1
 			case _ => char
 		}
 	}
@@ -30,6 +33,7 @@ class JsonReader(base: Reader) extends Reader {
 		var i = 0
 		
 		base.skip(off)
+		offset += off
 		
 		var char = read
 		
