@@ -1,5 +1,5 @@
 package ftanml.objects
 
-trait GetSize {
+trait SizedObject {
 	def size: Int
 }

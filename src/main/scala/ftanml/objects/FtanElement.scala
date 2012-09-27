@@ -11,7 +11,7 @@ object FtanElement extends FtanElement(new LinkedHashMap[FtanString,FtanValue]) 
   def apply(attributes: (FtanString,FtanValue)*) = new FtanElement(attributes.toMap)
 }
 
-case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends FtanValue with GetSize {
+case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends FtanValue with SizedObject {
   import FtanElement._
   
   def this(attributes: Map[FtanString,FtanValue]) = this(new LinkedHashMap++=attributes)
