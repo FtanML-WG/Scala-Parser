@@ -4,12 +4,12 @@ import java.io.Reader
 import java.util.Stack
 
 class JsonReader(base: Reader) extends Reader {
-	var depthMapsArray = new Stack[Int] //0: Map, 1: Array (tried to do it with an enum but couldn't get that working
-	var escaped = false
-	var inString = false
+	private var depthMapsArray = new Stack[Int] //0: Map, 1: Array (tried to do it with an enum but couldn't get that working
+	private var escaped = false
+	private var inString = false
 	
-	override def read(): Int = {
-		val char = base.read()
+	override def read: Int = {
+		val char = base.read
 		char match {
 			case '"' => if(!escaped) inString = !inString; '"'
 			case '\\' => if(inString) escaped = !escaped; '\\'
@@ -19,7 +19,7 @@ class JsonReader(base: Reader) extends Reader {
 			case '[' => depthMapsArray.push(1); '['
 			case ']' => assert(depthMapsArray.pop == 1, "Expected }, found ]"); ']'
 			case ':' => '='
-			case ',' if(depthMapsArray.peek == 0) => read()
+			case ',' if(depthMapsArray.peek == 0) => read
 			case -1 => assert(depthMapsArray.size == 0, "End of file reached, but map or array unclosed"); -1
 			case _ => char
 		}
@@ -31,19 +31,19 @@ class JsonReader(base: Reader) extends Reader {
 		
 		base.skip(off)
 		
-		var char = read()
+		var char = read
 		
 		if (char == -1) return -1
 		
 		while(i < length && char != -1){
 			cbuf(i) = char.asInstanceOf[Char]
-			char = read()
+			char = read
 			i += 1
 		}
 			
 		i + 1
 	}
 
-	def close(): Unit = {base.close}
+	def close: Unit = {base.close}
 
 }
