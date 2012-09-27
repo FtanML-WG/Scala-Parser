@@ -1,5 +1,3 @@
-package test
-
 import ftanml.FtanParser
 import scala.util.parsing.input.CharSequenceReader
 import org.scalatest.matchers.ShouldMatchers

@@ -1,5 +1,3 @@
-package test
-
 import ftanml.objects.FtanString
 import org.scalatest.WordSpec
 import ftanml.objects.FtanElement

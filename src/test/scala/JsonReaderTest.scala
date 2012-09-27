@@ -1,5 +1,3 @@
-package test
-
 import org.scalatest.FlatSpec
 import java.io.StringReader
 import ftanml.util.JsonReader

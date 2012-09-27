@@ -1,4 +1,4 @@
-package test.types
+package types
 
 import org.scalatest.FlatSpec
 import ftanml.objects._

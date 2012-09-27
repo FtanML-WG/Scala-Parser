@@ -1,7 +1,6 @@
-package test.types
+package types
 
 import org.scalatest.FlatSpec
-
 import ftanml.objects._
 import ftanml.FtanParser
 import ftanml.types._

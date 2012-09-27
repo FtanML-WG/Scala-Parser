@@ -1,5 +1,3 @@
-package test
-
 import ftanml.objects.FtanNumber
 import ftanml.objects.FtanNull
 import org.scalatest.FlatSpec
