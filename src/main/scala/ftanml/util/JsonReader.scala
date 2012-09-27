@@ -37,7 +37,7 @@ class JsonReader(base: Reader) extends Reader {
 		}
 	}
 	
-	def read(cbuf: Array[Char], off: Int = 0, len: Int = -1): Int = {
+	override def read(cbuf: Array[Char], off: Int = 0, len: Int = -1): Int = {
 		val length = if(len == -1) cbuf.length else math.min(len, cbuf.length)
 		var i = 0
 		
