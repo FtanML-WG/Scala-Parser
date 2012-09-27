@@ -1,7 +1,7 @@
 package ftanml.types
 
 import collection.mutable.ListBuffer
-import ftanml.objects.{FtanNumber, FtanArray, FtanString, FtanElement}
+import ftanml.objects.{FtanNumber, FtanArray, FtanString, FtanElement, FtanBoolean}
 
 /**
  * The TypeFactory constructs types from FtanML elements that describe the type
@@ -44,6 +44,8 @@ object TypeFactory {
         case "not" =>
           val base = value.asInstanceOf[FtanElement]
           memberTypes += new ComplementType(makeType(base))
+        case "nullable" =>
+        	memberTypes += new NullableType(value.asInstanceOf[FtanBoolean])
         case "regex" =>
           memberTypes += new RegexType(value.asInstanceOf[FtanString])
         case "anyOf" =>

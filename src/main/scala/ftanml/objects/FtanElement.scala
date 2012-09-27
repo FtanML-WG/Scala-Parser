@@ -11,7 +11,7 @@ object FtanElement extends FtanElement(new LinkedHashMap[FtanString,FtanValue]) 
   def apply(attributes: (FtanString,FtanValue)*) = new FtanElement(attributes.toMap)
 }
 
-case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends FtanValue {
+case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends FtanValue with GetSize {
   import FtanElement._
   
   def this(attributes: Map[FtanString,FtanValue]) = this(new LinkedHashMap++=attributes)
@@ -95,4 +95,15 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
     attributes.hashCode()
   }
 
+  def size = {
+  	var size = attributes.size
+  	
+  	//don't want to count name and content as attributes
+  	if(attributes.contains(NAME_KEY))
+  		size -= 1
+  	if(attributes.contains(CONTENT_KEY))
+  		size -= 1
+
+  	size
+  }
 }

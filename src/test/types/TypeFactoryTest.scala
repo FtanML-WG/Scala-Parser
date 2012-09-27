@@ -1,7 +1,6 @@
 package test.types
 
 import org.scalatest.FlatSpec
-
 import ftanml.objects._
 import ftanml.FtanParser
 import ftanml.types._
@@ -37,6 +36,10 @@ class TypeFactoryTest extends FlatSpec {
   val minMaxExclusive = TypeFactory.makeType(parse("<minExclusive=5 maxExclusive=10>"))
 
   var minMaxWithExclusions = TypeFactory.makeType(parse("<min=-5 max=5 not=<fixed=0>>"))
+  
+  val nullableFalse = TypeFactory.makeType(parse("<nullable=false>"))
+  
+  val nullableTrue = TypeFactory.makeType(parse("<nullable=true>"))
 
   var regexType = TypeFactory.makeType(parse("<regex='[0-9a-f]+'>"))
 
@@ -56,8 +59,12 @@ class TypeFactoryTest extends FlatSpec {
     assert(!FtanNumber(10).isInstance(minMaxExclusive), "13")
     assert(FtanNumber(8).isInstance(minMaxExclusive), "14")
     assert(!FtanNumber(0).isInstance(minMaxWithExclusions), "15")
-    assert(FtanString("03f").isInstance(regexType), "16")
-    assert(!FtanString("03A").isInstance(regexType), "17")
+    assert(!FtanNull.isInstance(nullableFalse), "16")
+    assert(FtanNull.isInstance(nullableTrue), "17")
+    assert(FtanFalse.isInstance(nullableFalse), "18")
+    assert(FtanString("").isInstance(nullableTrue), "19")
+    assert(FtanString("03f").isInstance(regexType), "20")
+    assert(!FtanString("03A").isInstance(regexType), "21")
   }
 
 
