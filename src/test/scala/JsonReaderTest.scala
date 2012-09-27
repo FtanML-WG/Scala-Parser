@@ -3,11 +3,8 @@ package test
 import org.scalatest.FlatSpec
 import java.io.StringReader
 import ftanml.util.JsonReader
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 
-@RunWith(classOf[JUnitRunner])
 class JsonReaderTest extends FlatSpec with ShouldMatchers{
 	
 	"A JsonReader" must "be able to convert valid JSON to valid FtanML" in {

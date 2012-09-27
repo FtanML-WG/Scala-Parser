@@ -5,10 +5,7 @@ import org.scalatest.FlatSpec
 import ftanml.objects._
 import ftanml.FtanParser
 import ftanml.types._
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class SizeTest extends FlatSpec {
 
   val parser = new FtanParser
