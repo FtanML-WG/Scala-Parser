@@ -58,5 +58,5 @@ case class FtanArray(values: Seq[FtanValue]) extends FtanValue with GetSize {
     writer.append("]");
   }
   
-  def getSize = values.length
+  def size = values.length
 }

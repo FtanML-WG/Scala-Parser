@@ -150,5 +150,5 @@ case class FtanString(value: String) extends FtanValue with GetSize {
     writer.append("\"" + escapedValue('"') + "\"");
   }
   
-  def getSize = value.length
+  def size = value.length
 }

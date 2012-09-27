@@ -95,7 +95,7 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
     attributes.hashCode()
   }
 
-  def getSize = {
+  def size = {
   	var size = attributes.size
   	
   	//don't want to count name and content as attributes
