@@ -26,7 +26,7 @@ class FtanParser extends RegexParsers {
     }
 
   private def escapedCharacter: Parser[String] =
-    "\\" ~> """[bfnrt<>"'\\/]|u[a-fA-F0-9]{4}|x[a-fA-F0-9]+;""".r ^^ {
+    "\\" ~> """[bfnrt<>"'\\/]|u[a-fA-F0-9]{4}|x[a-fA-F0-9]+;|\[(.).*?\1\]""".r ^^ {
       value => FtanString.deescapeChar("\\" + value)
     }
 

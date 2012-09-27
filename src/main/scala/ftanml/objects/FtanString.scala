@@ -39,6 +39,9 @@ object FtanString extends FtanString("") {
       else if (input.charAt(1) == 'x') {
         // Parse unicode escape sequence : \xH+;
         surrogatePair(Integer.parseInt(input.substring(2, input.length()-1), 16))
+      } else if (input.charAt(1) == '[') {
+        // 'CDATA' section \[*....*] where * is any character
+        input.substring(3, input.length()-2)
       } else
         // TODO Correct exception class
         throw new IllegalStateException("Unknown escape sequence "
