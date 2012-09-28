@@ -5,8 +5,8 @@ import java.io.Writer
 import scala.collection.mutable.LinkedHashMap
 
 object FtanElement extends FtanElement(new LinkedHashMap[FtanString,FtanValue]) {
-  val NAME_KEY = new FtanString("name")
-  val CONTENT_KEY = new FtanString("content")
+  val NAME_KEY = new FtanString("$name")
+  val CONTENT_KEY = new FtanString("$content")
   
   def apply(attributes: (FtanString,FtanValue)*) = new FtanElement(attributes.toMap)
 }
