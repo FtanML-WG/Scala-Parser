@@ -1,7 +1,7 @@
 package ftanml.types
 
-import util.matching.Regex
-import ftanml.objects.{FtanString, FtanValue}
+import ftanml.objects.FtanString
+import ftanml.objects.FtanValue
 
 
 /**

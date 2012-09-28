@@ -1,5 +1,7 @@
 package util
 
-trait TypeTest extends ParserTest {
+import org.scalatest.Suite
 
+trait TypeTest extends ParserTest {
+  self: Suite =>
 }

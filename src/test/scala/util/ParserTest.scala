@@ -1,11 +1,11 @@
 package util
 
-import ftanml.FtanParser
 import scala.util.parsing.input.CharSequenceReader
-import ftanml.objects.FtanValue
+
 import org.scalatest.Suite
-impimport util.TestHelper
-ort objects.TestHelper
+
+import ftanml.FtanParser
+import ftanml.objects.FtanValue
 
 /**
  * Inheriting from this class allows a very easy way import objects.TestHelper
