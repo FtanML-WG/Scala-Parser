@@ -40,6 +40,8 @@ object TypeFactory {
             new MaxValueType(value.asInstanceOf[FtanNumber], false)
           case "maxExclusive" =>
             new MaxValueType(value.asInstanceOf[FtanNumber], true)
+          case "name" =>
+          	new NameType(value.asInstanceOf[FtanString])
           case "not" =>
             new ComplementType(makeType(value.asInstanceOf[FtanElement]))
           case "nullable" =>

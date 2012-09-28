@@ -33,6 +33,8 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
   val minMaxExclusive = TypeFactory.makeType(parse("<minExclusive=5 maxExclusive=10>"))
 
   val minMaxWithExclusions = TypeFactory.makeType(parse("<min=-5 max=5 not=<fixed=0>>"))
+  
+  val nameType = TypeFactory.makeType(parse("<name='test'>"))
 
   val nullableFalse = TypeFactory.makeType(parse("<nullable=false>"))
 
@@ -55,6 +57,9 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
     FtanNumber(10) !=> minMaxExclusive
     FtanNumber(8) ==> minMaxExclusive
     FtanNumber(0) !=> minMaxWithExclusions
+    "<test>" ==> nameType
+    "<>" !=> nameType
+    "<test2>" !=> nameType
     FtanNull !=> nullableFalse
     FtanNull ==> nullableTrue
     FtanFalse ==> nullableFalse
