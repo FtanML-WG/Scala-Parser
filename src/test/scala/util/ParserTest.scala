@@ -32,6 +32,11 @@ to write test cases.
  *  
  *  "\"bla\"" <--> FtanString("bla") <-- "'bla'"
  *  
+ *  
+ *  If you need some other parser function, you can address the TestParser object directly.
+ *  
+ *  evaluating(TestParser.number("\"bla\"")) should produce[Exception] 
+ *  
  */
 trait ParserTest extends TestHelper {
 

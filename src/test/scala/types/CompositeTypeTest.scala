@@ -1,21 +1,24 @@
 package types
 
 import org.scalatest.FlatSpec
-import ftanml.objects._
-import ftanml.FtanParser
-import ftanml.types._
+
+import ftanml.objects.FtanBoolean
+import ftanml.objects.FtanNumber
+import ftanml.objects.FtanString
+import ftanml.objects.FtanTrue
+import ftanml.types.AllOfType
+import ftanml.types.AnyOfType
+import ftanml.types.EnumerationType
+import ftanml.types.FixedValueType
+import ftanml.types.NumberType
+import ftanml.types.StringType
+import util.TypeTest
 
 /**
  * Unit tests for AnyOf and AllOf types
  */
 
-class CompositeTypeTest extends FlatSpec {
-
-  val parser = new FtanParser
-
-  def parse(exp : String) : FtanValue = {
-    parser.parse(exp)
-  }
+class CompositeTypeTest extends FlatSpec with TypeTest {
 
   var threeNumbers = new EnumerationType(
     Seq(FtanNumber(1), FtanNumber(2), FtanNumber(3))
@@ -32,13 +35,12 @@ class CompositeTypeTest extends FlatSpec {
   var allType = new AllOfType(Seq(threeNumbers, fixedNumber, anyNumber))
 
   "Values" should "be instances of combined Types" in {
-    assert(!FtanBoolean(true).isInstance(anyType), "1")
-    assert(!FtanTrue.isInstance(allType), "2")
-    assert(FtanNumber(2).isInstance(anyType), "3");
-    assert(FtanNumber(2).isInstance(allType), "4");
-    assert(!FtanNumber(3).isInstance(allType), "5");
-    assert(FtanString("").isInstance(anyType), "6");
-    assert(anyType.matches(FtanString("")))
+    FtanBoolean(true) !=> anyType
+    FtanTrue !=> allType
+    FtanNumber(2) ==> anyType
+    FtanNumber(2) ==> allType
+    FtanNumber(3) !=> allType
+    FtanString("") ==> anyType
   }
 
 

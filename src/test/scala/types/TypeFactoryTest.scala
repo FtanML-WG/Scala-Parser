@@ -4,68 +4,63 @@ import org.scalatest.FlatSpec
 import ftanml.objects._
 import ftanml.FtanParser
 import ftanml.types._
+import util.TypeTest
 
 /**
  * Unit tests for TypeFactory constructing types from elements
  */
 
-class TypeFactoryTest extends FlatSpec {
+class TypeFactoryTest extends FlatSpec with TypeTest {
 
-  val parser = new FtanParser
+  val parse = (TestParser.parse _) andThen { _.asInstanceOf[FtanElement] }
 
-  def parse(exp : String) : FtanElement = {
-    parser.parse(exp).asInstanceOf[FtanElement]
-  }
+  val booleanType = TypeFactory.makeType(parse("<boolean>"))
 
-  var booleanType = TypeFactory.makeType(parse("<boolean>"))
+  val threeNumbers = TypeFactory.makeType(parse("<enum=[1,2,3]>"))
 
-  var threeNumbers = TypeFactory.makeType(parse("<enum=[1,2,3]>"))
+  val fixedNumber = TypeFactory.makeType(parse("<fixed=2>"))
 
-  var fixedNumber = TypeFactory.makeType(parse("<fixed=2>"))
+  val anyString = TypeFactory.makeType(parse("<string>"));
 
-  var anyString = TypeFactory.makeType(parse("<string>"));
+  val anyNumber = TypeFactory.makeType(parse("<number>"))
 
-  var anyNumber = TypeFactory.makeType(parse("<number>"))
+  val anyType = TypeFactory.makeType(parse("<anyOf=[<enum=[1,2,3]>, <fixed=2>, <string>]>"))
 
-  var anyType = TypeFactory.makeType(parse("<anyOf=[<enum=[1,2,3]>, <fixed=2>, <string>]>"))
+  val allType = TypeFactory.makeType(parse("<number enum=[1,2,3] fixed=2>"))
 
-  var allType = TypeFactory.makeType(parse("<number enum=[1,2,3] fixed=2>"))
-
-  var minMaxType = TypeFactory.makeType(parse("<min=5 max=10>"))
+  val minMaxType = TypeFactory.makeType(parse("<min=5 max=10>"))
 
   val minMaxExclusive = TypeFactory.makeType(parse("<minExclusive=5 maxExclusive=10>"))
 
-  var minMaxWithExclusions = TypeFactory.makeType(parse("<min=-5 max=5 not=<fixed=0>>"))
-  
+  val minMaxWithExclusions = TypeFactory.makeType(parse("<min=-5 max=5 not=<fixed=0>>"))
+
   val nullableFalse = TypeFactory.makeType(parse("<nullable=false>"))
-  
+
   val nullableTrue = TypeFactory.makeType(parse("<nullable=true>"))
 
-  var regexType = TypeFactory.makeType(parse("<regex='[0-9a-f]+'>"))
+  val regexType = TypeFactory.makeType(parse("<regex='[0-9a-f]+'>"))
 
   "Values" should "be instances of factory-made Types" in {
-    assert(FtanBoolean(true).isInstance(booleanType), "0")
-    assert(!FtanTrue.isInstance(allType), "2")
-    assert(FtanNumber(2).isInstance(anyType), "3");
-    assert(FtanNumber(2).isInstance(allType), "4");
-    assert(!FtanNumber(3).isInstance(allType), "5");
-    assert(FtanString("").isInstance(anyType), "6");
-    assert(anyType.matches(FtanString("")), "7")
-    assert(FtanNumber(5).isInstance(minMaxType), "8")
-    assert(FtanNumber(10).isInstance(minMaxType), "9")
-    assert(!FtanNumber(11).isInstance(minMaxType), "10")
-    assert(!FtanNumber(4).isInstance(minMaxType), "11")
-    assert(!FtanNumber(5).isInstance(minMaxExclusive), "12")
-    assert(!FtanNumber(10).isInstance(minMaxExclusive), "13")
-    assert(FtanNumber(8).isInstance(minMaxExclusive), "14")
-    assert(!FtanNumber(0).isInstance(minMaxWithExclusions), "15")
-    assert(!FtanNull.isInstance(nullableFalse), "16")
-    assert(FtanNull.isInstance(nullableTrue), "17")
-    assert(FtanFalse.isInstance(nullableFalse), "18")
-    assert(FtanString("").isInstance(nullableTrue), "19")
-    assert(FtanString("03f").isInstance(regexType), "20")
-    assert(!FtanString("03A").isInstance(regexType), "21")
+    FtanBoolean(true) ==> booleanType
+    FtanTrue !=> allType
+    FtanNumber(2) ==> anyType
+    FtanNumber(2) ==> allType
+    FtanNumber(3) !=> allType
+    FtanString("") ==> anyType
+    FtanNumber(5) ==> minMaxType
+    FtanNumber(10) ==> minMaxType
+    FtanNumber(11) !=> minMaxType
+    FtanNumber(4) !=> minMaxType
+    FtanNumber(5) !=> minMaxExclusive
+    FtanNumber(10) !=> minMaxExclusive
+    FtanNumber(8) ==> minMaxExclusive
+    FtanNumber(0) !=> minMaxWithExclusions
+    FtanNull !=> nullableFalse
+    FtanNull ==> nullableTrue
+    FtanFalse ==> nullableFalse
+    FtanString("") ==> nullableTrue
+    FtanString("03f") ==> regexType
+    FtanString("03A") !=> regexType
   }
-
 
 }

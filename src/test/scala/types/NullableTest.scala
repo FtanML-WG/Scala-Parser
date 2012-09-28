@@ -3,22 +3,21 @@ package types
 import org.scalatest.FlatSpec
 import ftanml.objects._
 import ftanml.types.NullableType
+import util.TypeTest
 
-class NullableTest extends FlatSpec {
+class NullableTest extends FlatSpec with TypeTest {
 
 	"Null" should "be matched correctly by NullableType" in {
-		assert(FtanNull.isInstance(new NullableType(FtanTrue)), "1")
-		assert(!FtanNull.isInstance(new NullableType(FtanFalse)), "2")
-		assert(new NullableType(FtanTrue).matches(FtanNull), "3")
-		assert(!new NullableType(FtanFalse).matches(FtanNull), "4")
+		FtanNull ==> new NullableType(FtanTrue)
+		FtanNull !=> new NullableType(FtanFalse)
 	}
 	
 	"Other values" should "be unaffected by NullableType" in {
-		assert(FtanFalse.isInstance(new NullableType(FtanTrue)), "1")
-		assert(FtanFalse.isInstance(new NullableType(FtanFalse)), "2")
-		assert(FtanNumber(0).isInstance(new NullableType(FtanFalse)), "3")
-		assert(FtanArray(FtanString("")).isInstance(new NullableType(FtanFalse)), "4")
-		assert(new NullableType(FtanTrue).matches(FtanNumber(3)), "5")
-		assert(new NullableType(FtanFalse).matches(FtanElement(FtanString("bla") -> FtanString("1.0"))), "6")
+		FtanFalse ==> new NullableType(FtanTrue)
+		FtanFalse ==> new NullableType(FtanFalse)
+		FtanNumber(0) ==> new NullableType(FtanFalse)
+		FtanArray(FtanString("")) ==> new NullableType(FtanFalse)
+		FtanNumber(3) ==> new NullableType(FtanTrue)
+		FtanElement(FtanString("bla") -> FtanString("1.0")) ==> new NullableType(FtanFalse)
 	}
 }

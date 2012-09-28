@@ -4,44 +4,41 @@ import org.scalatest.FlatSpec
 import ftanml.objects._
 import ftanml.FtanParser
 import ftanml.types._
+import util.TypeTest
 
 /**
  * Unit tests for enumeration types
  */
 
-class EnumerationTest extends FlatSpec {
-
-  val parser = new FtanParser
-
-  def parse(exp : String) : FtanValue = {
-    parser.parse(exp)
-  }
+class EnumerationTest extends FlatSpec with TypeTest {
+  
+  val parse = TestParser.parse _
 
   "Boolean Values" should "be instances of Enumeration Type" in {
-    assert(FtanBoolean(true).isInstance(new EnumerationType(Seq(FtanTrue, FtanFalse))), "1")
-    assert(FtanBoolean(false).isInstance(new EnumerationType(Seq(FtanFalse, new FtanString("")))), "2")
-    assert(!FtanFalse.isInstance(new EnumerationType(Seq())), "3")
+    FtanBoolean(true) ==> new EnumerationType(Seq(FtanTrue, FtanFalse))
+    FtanBoolean(false) ==> new EnumerationType(Seq(FtanFalse, new FtanString("")))
+    FtanFalse !=> new EnumerationType(Seq())
   }
 
   "Number Values" should "be instances of Enumeration Type" in {
-    assert(FtanNumber(93.7).isInstance(new EnumerationType(Seq(FtanNumber(93.7)))))
-    assert(FtanNumber(93.7).isInstance(new EnumerationType(Seq(FtanString("z"), FtanNumber(93.7)))))
-    assert(!FtanNumber(93.7).isInstance(new EnumerationType(Seq(FtanFalse,  FtanArray(FtanNumber(93.7))))))
+    FtanNumber(93.7) ==> new EnumerationType(Seq(FtanNumber(93.7)))
+    FtanNumber(93.7) ==> new EnumerationType(Seq(FtanString("z"), FtanNumber(93.7)))
+    FtanNumber(93.7) !=> new EnumerationType(Seq(FtanFalse,  FtanArray(FtanNumber(93.7))))
   }
 
   "Strings" should "be instances of Enumeration Type" in {
-    assert(FtanString("abcd").isInstance(new EnumerationType(Seq(FtanString("abcd"), FtanString("pqrs")))), "1");
-    assert(!FtanString("abcd").isInstance(new EnumerationType(Seq(FtanString(""), FtanString("pqrs")))), "2");
-    assert(new EnumerationType(Seq(FtanString("abcd"), FtanString("abcd"))).matches(parse("\"abcd\"")), "3");
+    FtanString("abcd") ==> new EnumerationType(Seq(FtanString("abcd"), FtanString("pqrs")))
+    FtanString("abcd") !=> new EnumerationType(Seq(FtanString(""), FtanString("pqrs")))
+    "\"abcd\"" ==> new EnumerationType(Seq(FtanString("abcd"), FtanString("abcd"))) 
   }
 
   "Arrays" should "be instances of Enumeration Type" in {
-    assert(FtanArray(FtanTrue, FtanFalse).isInstance(new EnumerationType(Seq(FtanArray(), FtanArray(parse("true"), parse("false"))))))
+    FtanArray(FtanTrue, FtanFalse) ==> new EnumerationType(Seq(FtanArray(), FtanArray(parse("true"), parse("false"))))
   }
 
   "Elements" should  "be instances of ElementType" in {
-    assert(parse("<a b=1 c=2>").isInstance(new EnumerationType(
-      Seq(FtanArray(), parse("<a c=2 b=1>")))))
+    "<a b=1 c=2>" ==> new EnumerationType(
+      Seq(FtanArray(), parse("<a c=2 b=1>")))
   }
 
 
