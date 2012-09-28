@@ -27,6 +27,8 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
   val anyType = TypeFactory.makeType(parse("<anyOf=[<enum=[1,2,3]>, <fixed=2>, <string>]>"))
 
   val allType = TypeFactory.makeType(parse("<number enum=[1,2,3] fixed=2>"))
+  
+  val itemType = TypeFactory.makeType(parse("<itemType=<boolean>>"))
 
   val minMaxType = TypeFactory.makeType(parse("<min=5 max=10>"))
 
@@ -51,6 +53,10 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
     FtanNumber(2) ==> allType
     FtanNumber(3) !=> allType
     FtanString("") ==> anyType
+    "[true, false]" ==> itemType
+    //doesn't work right now: Element names and content should not be matched, null attributes should be stripped when creating elements
+    // "<elem att1=null att2=false>" ==> itemType
+    "true" !=> itemType
     FtanNumber(5) ==> minMaxType
     FtanNumber(10) ==> minMaxType
     FtanNumber(11) !=> minMaxType

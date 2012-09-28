@@ -32,6 +32,8 @@ object TypeFactory {
             new FixedValueType(value)
           case "enum" =>
             new EnumerationType(value.asInstanceOf[FtanArray].values)
+          case "itemType" =>
+          	new ItemType(makeType(value.asInstanceOf[FtanElement]))
           case "min" =>
             new MinValueType(value.asInstanceOf[FtanNumber], false)
           case "minExclusive" =>
