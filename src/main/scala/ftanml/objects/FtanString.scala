@@ -94,7 +94,7 @@ object FtanString extends FtanString("") {
   }
 }
 
-case class FtanString(value: String) extends FtanValue with GetSize {
+case class FtanString(value: String) extends FtanValue with SizedObject {
 
   private def escapedValue(usedQuote: Char): String = {
     def escapeChar(input: Char): String = input match {

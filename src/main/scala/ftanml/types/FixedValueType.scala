@@ -8,7 +8,6 @@ import ftanml.objects.FtanValue
  */
 
 class FixedValueType(fixedValue : FtanValue) extends FtanType {
-  def matches(value: FtanValue) = {
-    value == fixedValue
-  }
+  
+  def matches(value: FtanValue) = value == fixedValue
 }

@@ -3,7 +3,7 @@ package ftanml.types
 import ftanml.objects.FtanValue
 
 
-abstract class FtanType {
+trait FtanType {
 
   def matches (value : FtanValue) : Boolean
 

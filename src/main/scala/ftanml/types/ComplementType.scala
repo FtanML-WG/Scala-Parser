@@ -8,7 +8,6 @@ import ftanml.objects.FtanValue
  */
 
 class ComplementType(base : FtanType) extends FtanType {
-  def matches(value: FtanValue) = {
-    !base.matches(value)
-  }
+  
+  def matches(value: FtanValue) = !base.matches(value)
 }
