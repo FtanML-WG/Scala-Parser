@@ -5,7 +5,4 @@ import ftanml.objects.FtanValue
 /**
  * A type that matches any value
  */
-object AnyType extends FtanType {
-  
-	def matches (value : FtanValue) = true
-}
+object AnyType extends AllOfType(Nil)
