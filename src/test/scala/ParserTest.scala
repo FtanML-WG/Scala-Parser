@@ -30,7 +30,7 @@ import org.scalatest.Suite
  *  "\"bla\"" <--> FtanString("bla") <-- "'bla'"
  *  
  */
-trait ParserTest extends ShouldMatchers {
+trait ParserTest extends TestHelper {
 
   //This trait can only be mixed into test suites
   self: Suite =>
@@ -49,21 +49,6 @@ trait ParserTest extends ShouldMatchers {
         case NoSuccess(msg, _) => throw new IllegalArgumentException(
           "Could not parse '" + s + "': " + msg)
       }
-    }
-  }
-  
-  //Allow the should_equal matcher
-  //This matcher extends the should equal matchers from ScalaTest by checking
-  //lhs.equals(rhs) && rhs.equals(lhs) && lhs.hashCode==rhs.hashCode
-  implicit def any2ShouldEqual[T](lhs: T) = new {
-    def should_equal[U](rhs: U) {
-      lhs should equal (rhs)
-      rhs should equal (lhs)
-      lhs.hashCode should equal (rhs.hashCode)
-    }
-    def should_not_equal[U](rhs: U) {
-      lhs should not equal (rhs)
-      rhs should not equal (lhs)
     }
   }
 
