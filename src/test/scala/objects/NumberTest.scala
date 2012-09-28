@@ -1,6 +1,8 @@
+package objects
+
 import ftanml.objects.FtanNumber
-import ftanml.objects.FtanNull
 import org.scalatest.FlatSpec
+import util.ParserTest
 
 class NumberTest extends ParserTest with FlatSpec {
 

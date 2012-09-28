@@ -1,7 +1,10 @@
+package objects
+
 import ftanml.objects.FtanString
 import org.scalatest.WordSpec
 import ftanml.objects.FtanElement
 import ftanml.objects.FtanArray
+import util.ParserTest
 
 class StringTest extends ParserTest with WordSpec {
 

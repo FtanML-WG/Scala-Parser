@@ -1,3 +1,5 @@
+package objects
+
 import org.scalatest.FlatSpec
 import ftanml.objects.FtanElement
 import ftanml.objects.FtanString
@@ -7,6 +9,7 @@ import ftanml.objects.FtanNumber
 import ftanml.objects.FtanBoolean
 import ftanml.objects.FtanNull
 import ftanml.objects.FtanArray
+import util.ParserTest
 
 class ElementTest extends ParserTest with FlatSpec {
   "Elements" should "be compared correctly (equals, hashCode)" in {

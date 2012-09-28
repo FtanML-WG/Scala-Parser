@@ -1,9 +1,12 @@
+package objects
+
 import org.scalatest.FlatSpec
 import ftanml.objects.FtanNull
 import ftanml.objects.FtanArray
 import ftanml.objects.FtanString
 import ftanml.objects.FtanNumber
 import ftanml.objects.FtanBoolean
+import util.ParserTest
 
 class ArrayTest extends ParserTest with FlatSpec {
 

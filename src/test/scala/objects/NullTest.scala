@@ -1,5 +1,9 @@
+package objects
+
 import ftanml.objects.FtanNull
-import org.scalatest.FlatSpec
+import org.scimport objects.ParserTest
+import util.ParserTest
+alatest.FlatSpec
 
 class NullTest extends ParserTest with FlatSpec {  
   

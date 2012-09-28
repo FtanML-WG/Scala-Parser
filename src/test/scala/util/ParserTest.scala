@@ -1,12 +1,15 @@
+package util
+
 import ftanml.FtanParser
 import scala.util.parsing.input.CharSequenceReader
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.FlatSpec
 import ftanml.objects.FtanValue
 import org.scalatest.Suite
+impimport util.TestHelper
+ort objects.TestHelper
 
 /**
- * Inheriting from this class allows a very easy way to write test cases.
+ * Inheriting from this class allows a very easy way import objects.TestHelper
+to write test cases.
  * 
  * You can just write test cases the following way:
  * 

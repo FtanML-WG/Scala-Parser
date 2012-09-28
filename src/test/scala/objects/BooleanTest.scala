@@ -1,10 +1,9 @@
+package objects
+
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
-
-import ftanml.FtanParser
+import ftanml.objects.FtanBoimport ftanml.FtanParser
 import ftanml.objects.FtanBoolean
-
-class BooleanTest extends ParserTest with FlatSpec {
+import util.ParserTest
 
   "Booleans" should "be compared correctly (equals, hashCode)" in {
     FtanBoolean(true) should_equal FtanBoolean(true)

@@ -1,5 +1,6 @@
+package objects
+
 import org.scalatest.FlatSpec
-import java.io.StringReader
 import ftanml.util.JsonReader
 import org.scalatest.matchers.ShouldMatchers
 import java.text.ParseException
