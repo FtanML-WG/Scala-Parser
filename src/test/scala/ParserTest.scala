@@ -5,6 +5,31 @@ import org.scalatest.FlatSpec
 import ftanml.objects.FtanValue
 import org.scalatest.Suite
 
+/**
+ * Inheriting from this class allows a very easy way to write test cases.
+ * 
+ * You can just write test cases the following way:
+ * 
+ *  "\"bla\"" --> FtanString("bla") //The parser should parse "\"bla\"" as a FtanString("bla")
+ *  "\"bla\"" <-- FtanString("bla") //FtanString("bla").toFtanML should return "\"bla\""
+ *  "\"bla\"" <--> FtanString("bla") //Both above should be the case
+ *  
+ *  FtanString("bla") --> "\"bla\"" //FtanString("bla").toFtanML should return "\"bla\""
+ *  FtanString("bla") <-- "\"bla\"" //The parser should parse "\"bla\"" as a FtanString("bla")
+ *  
+ *  You can also combine them, for example
+ *  
+ *  "\"bla\"" <-- FtanString("bla") <-- "'bla'" //The parser should parse "'bla'" as FtanString("bla") and when we output this FtanString("bla"), it should become "\"bla\""
+ *  
+ *  When using the left-to-right syntax, we can also use tuples
+ *  
+ *  "\"bla\"" <-- FtanString("bla") <-- ("'bla'","\"bla\"") //The parser should parse both "'bla'" and "\"bla\"" as FtanString("bla") and when we output this FtanString("bla"), it should become "\"bla\""
+ *  
+ *  The last example could also be written as
+ *  
+ *  "\"bla\"" <--> FtanString("bla") <-- "'bla'"
+ *  
+ */
 trait ParserTest extends ShouldMatchers {
 
   //This trait can only be mixed into test suites
