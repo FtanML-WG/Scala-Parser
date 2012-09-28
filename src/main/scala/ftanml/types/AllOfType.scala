@@ -7,5 +7,6 @@ import ftanml.objects.FtanValue
  */
 
 class AllOfType (memberTypes : Traversable[FtanType]) extends FtanType {
+  
   def matches(value: FtanValue) : Boolean = memberTypes.forall{_.matches(value)}
 }

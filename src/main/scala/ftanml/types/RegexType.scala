@@ -12,7 +12,9 @@ import ftanml.objects.{FtanString, FtanValue}
  */
 
 class RegexType(pattern : FtanString) extends FtanType {
-  var regex = new Regex("^" + pattern.value + "$")
+  
+  private val regex = ("^" + pattern.value + "$").r
+  
   def matches(value: FtanValue) = {
     value match {
       case v : FtanString => regex.findFirstIn(v.value) != None
