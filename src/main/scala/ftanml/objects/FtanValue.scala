@@ -3,8 +3,11 @@ package ftanml.objects
 import java.io.StringWriter
 import java.io.Writer
 import ftanml.types.FtanType
+import ftanml.streams.Acceptor
 
 abstract class FtanValue {
+
+  def send(acceptor : Acceptor)
   def writeFtanML(writer: Writer)
 
   def toFtanML: String = {

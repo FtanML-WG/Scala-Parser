@@ -1,6 +1,7 @@
 package ftanml.objects
 
 import java.io.Writer
+import ftanml.streams.Acceptor
 
 object FtanBoolean extends FtanBoolean(false)
 
@@ -10,6 +11,10 @@ case class FtanBoolean(value: Boolean) extends FtanValue {
   }
   override def writeJson(writer: Writer) {
     writer.append(value.toString)
+  }
+
+  override def send(acceptor: Acceptor) {
+    acceptor.processBoolean(value)
   }
 }
 

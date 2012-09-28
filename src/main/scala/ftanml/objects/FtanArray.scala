@@ -1,6 +1,8 @@
 package ftanml.objects
 
 import java.io.Writer
+import ftanml.streams.Acceptor
+
 
 object FtanArray extends FtanArray(Nil) {
   //There is at least one argument
@@ -34,6 +36,15 @@ case class FtanArray(values: Seq[FtanValue]) extends FtanValue with SizedObject 
       case _ => return false
     }
     true
+  }
+
+
+  override def send(acceptor: ftanml.streams.Acceptor) {
+    acceptor.processStartArray()
+    values.foreach {
+      _.send(acceptor)
+    }
+    acceptor.processEndArray()
   }
 
   def writeFtanMLContent(writer: Writer) {

@@ -2,6 +2,7 @@ package ftanml.types
 
 import ftanml.objects.FtanString
 import ftanml.objects.FtanValue
+import ftanml.streams.Serializer
 
 
 /**
@@ -21,4 +22,6 @@ class RegexType(pattern : FtanString) extends FtanType {
       case _ => false
     }
   }
+
+
 }

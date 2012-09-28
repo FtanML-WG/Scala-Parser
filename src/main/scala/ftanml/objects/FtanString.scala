@@ -2,6 +2,7 @@ package ftanml.objects
 
 import java.io.Writer
 import java.lang.IllegalStateException
+import ftanml.streams.Acceptor
 
 object FtanString extends FtanString("") {
 
@@ -137,6 +138,10 @@ case class FtanString(value: String) extends FtanValue with SizedObject {
       writer.append(value);
     else
       writeFtanML(writer);
+  }
+
+  override def send(acceptor: Acceptor) {
+    acceptor.processString(value)
   }
 
   def writeFtanMLContent(writer: Writer) {
