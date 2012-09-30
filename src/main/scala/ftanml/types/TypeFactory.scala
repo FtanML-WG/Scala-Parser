@@ -32,6 +32,8 @@ object TypeFactory {
             new FixedValueType(value)
           case "enum" =>
             new EnumerationType(value.asInstanceOf[FtanArray].values)
+          case "itemType" =>
+          	new ItemType(makeType(value.asInstanceOf[FtanElement]))
           case "min" =>
             new MinValueType(value.asInstanceOf[FtanNumber], false)
           case "minExclusive" =>
@@ -40,6 +42,10 @@ object TypeFactory {
             new MaxValueType(value.asInstanceOf[FtanNumber], false)
           case "maxExclusive" =>
             new MaxValueType(value.asInstanceOf[FtanNumber], true)
+          case "name" =>
+          	new NameType(value.asInstanceOf[FtanString], false)
+          case "nameMatches" =>
+          	new NameType(value.asInstanceOf[FtanString], true)
           case "not" =>
             new ComplementType(makeType(value.asInstanceOf[FtanElement]))
           case "nullable" =>
