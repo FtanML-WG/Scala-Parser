@@ -3,6 +3,7 @@ package ftanml.objects
 import java.io.Writer
 import java.lang.IllegalStateException
 import ftanml.streams.Acceptor
+import ftanml.util.Unicode
 
 object FtanString extends FtanString("") {
 
@@ -39,7 +40,7 @@ object FtanString extends FtanString("") {
         Integer.parseInt(input.substring(2, 6), 16).asInstanceOf[Char].toString
       else if (input.charAt(1) == 'x') {
         // Parse unicode escape sequence : \xH+;
-        surrogatePair(Integer.parseInt(input.substring(2, input.length()-1), 16))
+        Unicode.surrogatePair(Integer.parseInt(input.substring(2, input.length()-1), 16))
       } else if (input.charAt(1) == '[') {
         // 'CDATA' section \[*....*] where * is any character
         input.substring(3, input.length()-2)
@@ -56,43 +57,7 @@ object FtanString extends FtanString("") {
         "Multi-Character token found, but isn't an escape sequence")
   }
 
-  /**
-   * Convert a Unicode codepoint to a String, either a single-character string
-   * in the case of a BMP codepoint, or a surrogate pair in the case of a non-BMP codepoint
-   */
 
-  def surrogatePair(code : Int) : String = {
-    if (code <= 65535) {
-      code.asInstanceOf[Char].toString
-    } else {
-      "" + highSurrogate(code) + lowSurrogate(code)
-    }
-  }
-
-  val NONBMP_MIN: Int = 0x10000
-  val NONBMP_MAX: Int = 0x10FFFF
-  val SURROGATE1_MIN: Char = 0xD800
-  val SURROGATE1_MAX: Char = 0xDBFF
-  val SURROGATE2_MIN: Char = 0xDC00
-  val SURROGATE2_MAX: Char = 0xDFFF
-
-  /**
-     * Return the high surrogate of a non-BMP character
-     * @param ch The Unicode codepoint of the non-BMP character to be divided.
-     * @return the first character in the surrogate pair
-     */
-  def highSurrogate(ch: Int): Char = {
-    (((ch - NONBMP_MIN) >> 10) + SURROGATE1_MIN).asInstanceOf[Char]
-  }
-
-    /**
-     * Return the low surrogate of a non-BMP character
-     * @param ch The Unicode codepoint of the non-BMP character to be divided.
-     * @return the second character in the surrogate pair
-     */
-  def lowSurrogate(ch: Int): Char = {
-    (((ch - NONBMP_MIN) & 0x3FF) + SURROGATE2_MIN).asInstanceOf[Char]
-  }
 }
 
 case class FtanString(value: String) extends FtanValue with SizedObject {

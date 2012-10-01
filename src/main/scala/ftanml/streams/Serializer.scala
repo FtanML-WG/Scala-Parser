@@ -2,6 +2,7 @@ package ftanml.streams
 
 import java.io.Writer
 import collection.mutable.Stack
+import ftanml.util.Unicode
 
 /**
  * A serializer accepts a stream of events representing a FtanML value and outputs
@@ -47,7 +48,7 @@ class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
   }
 
   private def escapedValue(value: String, usedQuote: Char): String = {
-    def escapeChar(input: Char): String = input match {
+    def escapeChar(input: Int): String = input match {
       case '\\' => "\\\\"
       case '\b' => "\\b"
       case '\f' => "\\f"
@@ -56,16 +57,19 @@ class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
       case '\t' => "\\t"
       case char if char == usedQuote => "\\" + usedQuote
       case other =>
-        // TODO Allow the user to set a flag which generates a \\uXXXX
-        // sequence for non standard characters
-        other.toString
+        if (other >= Unicode.NONBMP_MIN) {
+          "\\x" + other.toHexString + ";"
+        } else {
+          other.asInstanceOf[Char].toString
+        }
     }
-    ("" /: value.map(escapeChar))(_ + _)
+    ("" /: Unicode.codepoints(value).map(escapeChar))(_ ++ _)
   }
 
   def processNumber(value: Double) {
     preValue()
-    if (value.isWhole()) {
+    if (value == value.floor && !value.isInfinite) {
+      // use integer notation for whole numbers
       writer.append(value.asInstanceOf[Long].toString)
     } else {
       writer.append(value.toString)

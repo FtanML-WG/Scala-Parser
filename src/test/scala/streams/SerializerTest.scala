@@ -29,11 +29,12 @@ class SerializerTest extends ParserTest with FlatSpec {
   "Strings" should "effectively round-trip" in {
     serialize(parse("\"abcd\"")) should_equal "\"abcd\""
     serialize(parse("\"abcd\\n\"")) should_equal "\"abcd\\n\""
+    serialize(parse("\"\\x2A6d6;\"")) should_equal "\"\\x2a6d6;\""
   }
 
   "Numbers" should "effectively round-trip" in {
     serialize(parse("1.23")) should_equal "1.23"
-    serialize(parse("-4")) should_equal "-4.0"  // TODO: not really the result we want
+    serialize(parse("-4")) should_equal "-4"
   }
 
   "Booleans" should "effectively round-trip" in {
@@ -45,7 +46,7 @@ class SerializerTest extends ParserTest with FlatSpec {
     serialize(parse("[]")) should_equal "[]"
     serialize(parse("[true,false]")) should_equal "[true,false]"
     serialize(parse("[true,false]")) should_equal "[true,false]"
-    serialize(parse("[1,2,3]")) should_equal "[1.0,2.0,3.0]" // TODO: not really the result we want
+    serialize(parse("[1,2,3]")) should_equal "[1,2,3]"
     serialize(parse("[[],[true]]")) should_equal "[[],[true]]"
   }
 

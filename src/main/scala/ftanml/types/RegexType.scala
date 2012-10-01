@@ -2,7 +2,6 @@ package ftanml.types
 
 import ftanml.objects.FtanString
 import ftanml.objects.FtanValue
-import ftanml.streams.Serializer
 
 
 /**

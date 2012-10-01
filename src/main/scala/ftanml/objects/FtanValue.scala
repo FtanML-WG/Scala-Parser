@@ -7,6 +7,10 @@ import ftanml.streams.Acceptor
 
 abstract class FtanValue {
 
+  /**
+   * Send a stream of events representing the content of this value
+   * to a specified Acceptor.
+   */
   def send(acceptor : Acceptor)
   def writeFtanML(writer: Writer)
 
