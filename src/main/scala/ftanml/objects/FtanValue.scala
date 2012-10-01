@@ -23,11 +23,13 @@ abstract class FtanValue {
     writer.toString
   }
 
-  def writeJson(writer: Writer)
-  
+  /**
+   * Get the value serialized as a JSON string (with no indenting)
+   */
+
   def toJson: String = {
     val writer = new StringWriter
-    writeJson(writer)
+    send(JSONSerializer.make(writer, false))
     writer.toString
   }
 
