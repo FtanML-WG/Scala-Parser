@@ -83,12 +83,12 @@ case class FtanString(value: String) extends FtanValue with SizedObject {
 
   def isValidName = value.matches("[\\p{Alpha}][\\p{Alpha}\\p{Digit}_:]*")
 
-  override def writeFtanMLName(writer: Writer) {
-    if (isValidName)
-      writer.append(value);
-    else
-      writeFtanML(writer);
-  }
+//  override def writeFtanMLName(writer: Writer) {
+//    if (isValidName)
+//      writer.append(value);
+//    else
+//      writeFtanML(writer);
+//  }
 
   override def send(acceptor: Acceptor) {
     acceptor.processString(value)
@@ -104,9 +104,5 @@ case class FtanString(value: String) extends FtanValue with SizedObject {
     writer.append(escapeContent);
   }
 
-  override def writeJson(writer: Writer)  {
-    writer.append("\"" + escapedValue('"') + "\"");
-  }
-  
   def size = value.length
 }

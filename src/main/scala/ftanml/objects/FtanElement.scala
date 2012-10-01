@@ -42,9 +42,9 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
 
 
 
-  def writeFtanMLContent(writer: Writer) {
-    writeFtanML(writer)
-  }
+//  def writeFtanMLContent(writer: Writer) {
+//    writeFtanML(writer)
+//  }
 
   override def send(acceptor: Acceptor) {
     acceptor.processStartElement(name)
@@ -63,29 +63,6 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
       content.values.foreach {_.send(acceptor)}
     }
     acceptor.processEndElement()
-  }
-
-  override def writeJson(writer: Writer) {
-    def writeAttribute(attr:(FtanString,FtanValue)) {
-      attr._1.writeJson(writer)
-      writer.append(":")
-      attr._2.writeJson(writer)
-    }
-    
-    // Opening bracket
-    writer.append("{");
-
-    //Write all attributes
-    if (attributes.size >= 1) {
-      writeAttribute(attributes.head)
-      for (element <- attributes.tail) {
-        writer.append(",")
-        writeAttribute(element)
-      }
-    }
-
-    // Closing bracket
-    writer.append("}");
   }
 
   override def equals(that: Any) =

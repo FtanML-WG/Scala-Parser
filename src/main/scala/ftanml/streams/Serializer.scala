@@ -12,14 +12,24 @@ import ftanml.util.Unicode
 class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
 
   // TODO: rewrite this using enumerations
-  val topLevel = 0
-  val startOfArray = 1
-  val middleOfArray = 2
-  val startOfElement = 3
-  val middleOfElement = 4
-  val inContent = 5
+  protected val topLevel = 0
+  protected val startOfArray = 1
+  protected val middleOfArray = 2
+  protected val startOfElement = 3
+  protected val middleOfElement = 4
+  protected val inContent = 5
 
-  private val stack = new Stack[Int]
+  protected val startElement = '<'
+  protected val endElement = '>'
+  protected val attSeparator = ' '
+  protected val attPunctuation = '='
+
+  protected val stack = new Stack[Int]
+
+  protected def replaceTop(state : Int) {
+    stack.pop()
+    stack.push(state)
+  }
 
   def processString(value: String) {
     if (!stack.isEmpty && (stack.top==inContent)) {
@@ -31,7 +41,7 @@ class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
     }
   }
 
-  private def formatString(value: String) {
+  protected def formatString(value: String) {
     //Calculate count of double quotation marks (") and single quotation marks (') in the string
     var numberDQuotes = 0;
     var numberSQuotes = 0;
@@ -47,7 +57,7 @@ class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
 
   }
 
-  private def escapedValue(value: String, usedQuote: Char): String = {
+  protected def escapedValue(value: String, usedQuote: Char): String = {
     def escapeChar(input: Int): String = input match {
       case '\\' => "\\\\"
       case '\b' => "\\b"
@@ -103,63 +113,67 @@ class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
 
   def processStartElement(name: Option[String]) {
     preValue()
-    writer.append("<")
-    var needSpace = false
-    name match {
-      case Some(n) => {
-        writeName(n)
-        needSpace = true
-      }
-      case None =>
+    writer.append(startElement)
+    stack.push(startOfElement)
+    val needSpace = writeElementName(name)
+    if (needSpace) {
+      replaceTop(middleOfElement)
     }
-    stack.push(if (needSpace) middleOfElement else startOfElement)
   }
 
   def processAttributeName(name: String) {
     if (stack.pop() != startOfElement) {
-      writer.append(" ");
+      writer.append(attSeparator);
     }
     stack.push(middleOfElement)
     writeName(name)
-    writer.append("=");
+    writer.append(attPunctuation);
   }
 
   def processStartContent(isElementOnly: Boolean) {
     if (!isElementOnly) {
       writer.append("|")
     }
-    stack.pop()
-    stack.push(inContent)
+    replaceTop(inContent)
   }
 
   def processEndElement() {
     stack.pop()
-    writer.append(">")
+    writer.append(endElement)
   }
 
   def error(err: Exception) {
     writer.close()
   }
 
-  private def preValue()  {
+  protected def preValue()  {
     if (!stack.isEmpty) {
       val state = stack.top
       if (state == startOfArray) {
-        stack.pop()
-        stack.push(middleOfArray)
+        replaceTop(middleOfArray)
       } else if (state == middleOfArray) {
         writer.append(",")
       }
     }
   }
 
-  private def postValue() {
+  protected def postValue() {
 
   }
 
   private def isValidName(name : String) = name.matches("[\\p{Alpha}][\\p{Alpha}\\p{Digit}_:]*")
 
-  private def writeName(name : String) {
+  protected def writeElementName(name : Option[String]) : Boolean =
+    name match {
+      case Some(n) => {
+        writeName(n)
+        true
+      }
+      case None => false
+    }
+
+
+  protected def writeName(name : String) {
     if (isValidName(name))
       writer.append(name);
     else

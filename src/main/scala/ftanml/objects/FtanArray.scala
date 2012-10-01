@@ -36,27 +36,15 @@ case class FtanArray(values: Seq[FtanValue]) extends FtanValue with SizedObject 
     acceptor.processEndArray()
   }
 
-  def writeFtanMLContent(writer: Writer) {
-    values.foreach {
-      case string: FtanString => string.writeFtanMLContent(writer)
-      case element: FtanElement => element.writeFtanMLContent(writer)
-      case _ =>
-        //TODO Correct exception class
-        throw new IllegalStateException("Given FtanArray isn't valid content for a FtanElement");
-    }
-  }
+//  def writeFtanMLContent(writer: Writer) {
+//    values.foreach {
+//      case string: FtanString => string.writeFtanMLContent(writer)
+//      case element: FtanElement => element.writeFtanMLContent(writer)
+//      case _ =>
+//        //TODO Correct exception class
+//        throw new IllegalStateException("Given FtanArray isn't valid content for a FtanElement");
+//    }
+//  }
 
-  override def writeJson(writer: Writer) {
-    writer.append("[")
-    if (values.size >= 1) {
-      values.head.writeJson(writer);
-      for (element <- values.tail) {
-        writer.append(",")
-        element.writeJson(writer)
-      }
-    }
-    writer.append("]");
-  }
-  
   lazy val size = values.length
 }
