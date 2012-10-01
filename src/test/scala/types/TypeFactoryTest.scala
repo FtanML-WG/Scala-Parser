@@ -24,7 +24,7 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
 
   val anyNumber = TypeFactory.makeType(parse("<number>"))
 
-  val anyType = TypeFactory.makeType(parse("<anyOf=[<enum=[1,2,3]>, <fixed=2>, <string>]>"))
+  val unionType = TypeFactory.makeType(parse("<anyOf=[<enum=[1,2,3]>, <fixed=2>, <string>]>"))
 
   val allType = TypeFactory.makeType(parse("<number enum=[1,2,3] fixed=2>"))
 
@@ -39,6 +39,10 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
   val nullableTrue = TypeFactory.makeType(parse("<nullable=true>"))
 
   val regexType = TypeFactory.makeType(parse("<regex='[0-9a-f]+'>"))
+
+  val anyType = TypeFactory.makeType(parse("<any>"))
+
+  val voidType = TypeFactory.makeType(parse("<nothing>"))
 
   "Values" should "be instances of factory-made Types" in {
     FtanBoolean(true) ==> booleanType
@@ -61,6 +65,8 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
     FtanString("") ==> nullableTrue
     FtanString("03f") ==> regexType
     FtanString("03A") !=> regexType
+    FtanString("") ==> anyType
+    FtanString("") !=> voidType
   }
 
 }

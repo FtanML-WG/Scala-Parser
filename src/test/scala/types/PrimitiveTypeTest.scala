@@ -52,5 +52,21 @@ class PrimitiveTypeTest extends FlatSpec with TypeTest {
     "<b foo=[1,2,3]|>" ==> ElementType
   }
 
+  "Everything" should "match AnyType" in  {
+    "null" ==> AnyType
+    "3.14" ==> AnyType
+    "\"London\"" ==> AnyType
+    "[1,2,3]"  ==> AnyType
+    "<e>" ==> AnyType
+  }
+
+  "Nothing" should "match NothingType" in  {
+    "null" !=> NothingType
+    "3.14" !=> NothingType
+    "\"London\"" !=> NothingType
+    "[1,2,3]"  !=> NothingType
+    "<e>" !=> NothingType
+  }
+
 
 }

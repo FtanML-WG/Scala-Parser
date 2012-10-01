@@ -14,7 +14,9 @@ object TypeFactory {
     "number" -> NumberType,
     "boolean" -> BooleanType,
     "array" -> ArrayType,
-    "element" -> ElementType)
+    "element" -> ElementType,
+    "any" -> AnyType,
+    "nothing" -> NothingType)
 
   //TODO There are a lot of asInstanceOf that could fail. We should catch these errors and throw an exception.
   def makeType(element: FtanElement): FtanType = {
