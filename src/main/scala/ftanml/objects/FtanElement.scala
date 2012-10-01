@@ -41,47 +41,6 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
 
 
 
-  override def writeFtanML(writer: Writer) {
-    var space_needed = false
-
-    // Opening bracket
-    writer.append("<");
-
-    // Write name, if existing
-    attributes.get(NAME_KEY) map {
-      case string: FtanString =>
-        string.writeFtanMLName(writer)
-        space_needed = true
-      case _ =>
-    }
-
-    //Write all attributes (except name and content attribute)
-    for ((key, value) <- attributes) value match {
-      //Ignore name attribute, if valid
-      case string: FtanString if key == NAME_KEY =>
-      //Ignore content attribute, if valid
-      case array: FtanArray if key == CONTENT_KEY && array.isValidElementContent =>
-      //Write all other attributes
-      case value: FtanValue =>
-        if (space_needed)
-          writer.append(" ")
-        key.writeFtanMLName(writer)
-        writer.append("=")
-        value.writeFtanML(writer)
-        space_needed = true
-    }
-
-    //If there is valid content, write it
-    attributes.get(CONTENT_KEY) map {
-      case content: FtanArray if content.isValidElementContent =>
-        writer.append("|")
-        content.writeFtanMLContent(writer)
-      case _ =>
-    }
-
-    // Closing bracket
-    writer.append(">");
-  }
 
   def writeFtanMLContent(writer: Writer) {
     writeFtanML(writer)

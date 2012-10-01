@@ -12,17 +12,6 @@ object FtanArray extends FtanArray(Nil) {
 }
 
 case class FtanArray(values: Seq[FtanValue]) extends FtanValue with SizedObject {
-  override def writeFtanML(writer: Writer) {
-    writer.append("[")
-    if (values.size >= 1) {
-      values.head.writeFtanML(writer);
-      for (element <- values.tail) {
-        writer.append(",")
-        element.writeFtanML(writer)
-      }
-    }
-    writer.append("]");
-  }
 
   /**
    * Check, if this FtanArray can be output in the content area of a tag

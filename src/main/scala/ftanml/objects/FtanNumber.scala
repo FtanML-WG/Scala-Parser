@@ -4,9 +4,7 @@ import java.io.Writer
 import ftanml.streams.Acceptor
 
 case class FtanNumber(value: Double) extends FtanValue {
-  override def writeFtanML(writer: Writer) {
-    writer.append(value.toString)
-  }
+
   override def writeJson(writer: Writer) {
     writer.append(value.toString)
   }
