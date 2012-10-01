@@ -80,21 +80,6 @@ case class FtanString(value: String) extends FtanValue with SizedObject {
     ("" /: value.map(escapeChar))(_ + _)
   }
 
-  override def writeFtanML(writer: Writer) {
-    //Calculate count of double quotation marks (") and single quotation marks (') in the string
-    var numberDQuotes = 0;
-    var numberSQuotes = 0;
-    value.foreach {
-      case '"' => numberDQuotes += 1
-      case '\'' => numberSQuotes += 1
-      case _ =>
-    }
-
-    //Use the quotation mark that causes less escaping
-    val usedQuote = if (numberDQuotes <= numberSQuotes) '"' else '\''
-    //Output the escaped string
-    writer.append(usedQuote + escapedValue(usedQuote) + usedQuote);
-  }
 
   def isValidName = value.matches("[\\p{Alpha}][\\p{Alpha}\\p{Digit}_:]*")
 

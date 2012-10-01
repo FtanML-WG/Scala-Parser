@@ -3,7 +3,7 @@ package ftanml.objects
 import java.io.StringWriter
 import java.io.Writer
 import ftanml.types.FtanType
-import ftanml.streams.Acceptor
+import ftanml.streams.{Serializer, Acceptor}
 
 abstract class FtanValue {
 
@@ -12,18 +12,17 @@ abstract class FtanValue {
    * to a specified Acceptor.
    */
   def send(acceptor : Acceptor)
-  def writeFtanML(writer: Writer)
+
+  /**
+   * Get the value serialized as a FtanML string (with no indenting)
+   */
 
   def toFtanML: String = {
     val writer = new StringWriter
-    writeFtanML(writer)
+    send(new Serializer(writer, false))
     writer.toString
   }
 
-  protected def writeFtanMLName(writer: Writer) {
-    writeFtanML(writer)
-  }
-  
   def writeJson(writer: Writer)
   
   def toJson: String = {
