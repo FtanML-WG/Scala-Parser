@@ -17,3 +17,6 @@ project/plugins/project/
 .project
 .settings
 .cache
+
+# Mac OS specific
+.DS_Store
