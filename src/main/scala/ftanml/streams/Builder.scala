@@ -61,9 +61,9 @@ class Builder extends Acceptor {
   def add(value : FtanValue) {
     if (stack.isEmpty) {
       stack.push(Info(null, new LinkedHashMap[FtanString, FtanValue], new LinkedList[FtanValue]))
-      stack.top.values = stack.top.values :+ value
+      stack.top.values :+= value
     } else {
-      stack.top.values = stack.top.values :+ value
+      stack.top.values :+= value
       stack.top.map.put(FtanString(stack.top.lastAtt), value)
     }
   }
