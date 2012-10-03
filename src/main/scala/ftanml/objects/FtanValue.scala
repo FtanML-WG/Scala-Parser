@@ -3,7 +3,7 @@ package ftanml.objects
 import java.io.StringWriter
 import java.io.Writer
 import ftanml.types.FtanType
-import ftanml.streams.{Serializer, Acceptor}
+import ftanml.streams.{Serializer, Acceptor, JSONSerializerFactory}
 
 abstract class FtanValue {
 
@@ -29,7 +29,7 @@ abstract class FtanValue {
 
   def toJson: String = {
     val writer = new StringWriter
-    send(JSONSerializer.make(writer, false))
+    send(JSONSerializerFactory.make(writer, false))
     writer.toString
   }
 
