@@ -17,19 +17,10 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
   
   def this(attributes: Map[FtanString,FtanValue]) = this(new LinkedHashMap++=attributes)
 
-  def name: Option[String] = {
-     attributes.get(NAME_KEY) match {
-      case a : Some[FtanValue] => Some(a.get.asInstanceOf[FtanString].value)
-      case _ => None
-    }
-  }
+  def name: Option[String] =
+     attributes.get(NAME_KEY) map { _.asInstanceOf[FtanString].value }
 
-  def content: FtanArray = {
-     attributes.get(CONTENT_KEY) match {
-      case a : Some[FtanValue] => a.get.asInstanceOf[FtanArray]
-      case _ => FtanArray(Nil)
-    }
-  }
+  def content: FtanArray = attributes.get(CONTENT_KEY) map {_.asInstanceOf[FtanArray]} getOrElse FtanArray(Nil)
 
   def isEmptyContent: Boolean = content.values.isEmpty
 
