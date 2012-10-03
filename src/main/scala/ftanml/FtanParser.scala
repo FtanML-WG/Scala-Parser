@@ -37,10 +37,9 @@ class FtanParser extends RegexParsers {
       ((escapedCharacter | stringCharacter(usedQuote))*) ^^ {
         value => FtanString(("" /: value)(_ + _))
       }
-    def sq_string = "'" ~> stringcontent('\'') <~ "'"
-    def dq_string = "\"" ~> stringcontent('"') <~ "\""
+    def quoted_string(quote: Char) = quote ~> stringcontent(quote) <~ quote
 
-    (sq_string | dq_string)
+    (quoted_string('"') | quoted_string('\''))
   }
 
   def array: Parser[FtanArray] =
