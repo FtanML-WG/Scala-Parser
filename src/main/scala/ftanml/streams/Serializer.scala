@@ -9,7 +9,7 @@ import ftanml.util.Unicode
  * the FtanML representation of the value to a Writer
  */
 
-class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
+class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
 
   // TODO: rewrite this using enumerations
   protected val topLevel = 0
@@ -26,13 +26,13 @@ class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
 
   protected val stack = new Stack[Int]
 
-  protected def replaceTop(state : Int) {
+  protected def replaceTop(state: Int) {
     stack.pop()
     stack.push(state)
   }
 
   def processString(value: String) {
-    if (!stack.isEmpty && (stack.top==inContent)) {
+    if (!stack.isEmpty && (stack.top == inContent)) {
       writer.append(escapedValue(value, '\\'))
     } else {
       preValue()
@@ -115,8 +115,8 @@ class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
     preValue()
     writer.append(startElement)
     stack.push(startOfElement)
-    val needSpace = writeElementName(name)
-    if (needSpace) {
+    name.map { name =>
+      writeName(name);
       replaceTop(middleOfElement)
     }
   }
@@ -146,7 +146,7 @@ class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
     writer.close()
   }
 
-  protected def preValue()  {
+  protected def preValue() {
     if (!stack.isEmpty) {
       val state = stack.top
       if (state == startOfArray) {
@@ -161,21 +161,11 @@ class Serializer(writer : Writer, indenting : Boolean) extends Acceptor {
 
   }
 
-  private def isValidName(name : String) = name.matches("[\\p{Alpha}][\\p{Alpha}\\p{Digit}_:]*")
+  private def isValidName(name: String) = name.matches("[\\p{Alpha}][\\p{Alpha}\\p{Digit}_:]*")
 
-  protected def writeElementName(name : Option[String]) : Boolean =
-    name match {
-      case Some(n) => {
-        writeName(n)
-        true
-      }
-      case None => false
-    }
-
-
-  protected def writeName(name : String) {
+  protected def writeName(name: String) {
     if (isValidName(name))
-      writer.append(name);
+      writer.append(name)
     else
       formatString(name)
   }

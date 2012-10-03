@@ -24,50 +24,50 @@ trait Acceptor {
    * Process a string value, including a string value that appears in element content
    */
 
-  def processString(value : String);
+  def processString(value : String)
 
   /**
    * Process a numeric value
    */
 
-  def processNumber(value : Double);
+  def processNumber(value : Double)
 
   /**
    * Process a boolean value
    */
 
-  def processBoolean(value : Boolean);
+  def processBoolean(value : Boolean)
 
   /**
    * Process the null value
    */
 
-  def processNull();
+  def processNull()
 
   /**
    * Process a startArray event
    */
-
-  def processStartArray();
+  
+  def processStartArray()
 
   /**
    * Process an endArray event
    */
 
-  def processEndArray();
+  def processEndArray()
 
   /**
    * Process a startElement event
    */
 
-  def processStartElement(name : Option[String]);
+  def processStartElement(name : Option[String])
 
   /**
    * Process an attribute name. The attribute value will follow in the next call, or in the next
    * start/end bracketed sequence of calls
    */
 
-  def processAttributeName(name : String);
+  def processAttributeName(name : String)
 
   /**
    * Process the start of the content of an element. The isElementOnly flag
@@ -75,18 +75,18 @@ trait Acceptor {
    * be set to false if it is not known what the content will be
    */
 
-  def processStartContent(isElementOnly : Boolean);
+  def processStartContent(isElementOnly : Boolean)
 
   /**
    * Process an endElement event
    */
 
-  def processEndElement();
+  def processEndElement()
 
   /**
    * Notify the acceptor that an error has occurred and no more events will be sent
    */
 
-  def error(err : Exception);
+  def error(err : Exception)
 
 }
