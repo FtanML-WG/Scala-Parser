@@ -23,6 +23,6 @@ class ItemTypeTest extends FlatSpec with TypeTest {
 	
 	"Other values" should "not be matched by ItemType" in {
 		"true" !=> new ItemType(BooleanType)
-		"'test'" != new ItemType(StringType)
+		"'test'" !=> new ItemType(StringType)
 	}
 }
