@@ -80,8 +80,7 @@ case class FtanString(value: String) extends FtanValue with SizedObject {
     ("" /: value.map(escapeChar))(_ + _)
   }
 
-
-  def isValidName = value.matches("[\\p{Alpha}][\\p{Alpha}\\p{Digit}_:]*")
+  def isValidName = FtanElement.VALID_NAME.pattern.matcher(value).matches
 
 //  override def writeFtanMLName(writer: Writer) {
 //    if (isValidName)
