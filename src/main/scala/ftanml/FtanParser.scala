@@ -31,12 +31,14 @@ class FtanParser extends RegexParsers {
     }
 
   def string: Parser[FtanString] = {
-    def stringCharacter(usedQuote: Char): Parser[Char] =
-      ("[^\\" + usedQuote + "\b\f\n\r\t]").r ^^ { _.charAt(0) }
-    def stringcontent(usedQuote: Char): Parser[FtanString] =
-      ((escapedCharacter | stringCharacter(usedQuote))*) ^^ {
+    def stringcontent(usedQuote: Char): Parser[FtanString] = {
+      def stringCharacter: Parser[Char] =
+        ("[^\\" + usedQuote + "\b\f\n\r\t]").r ^^ { _.charAt(0) }
+      
+      ((escapedCharacter | stringCharacter)*) ^^ {
         value => FtanString(("" /: value)(_ + _))
       }
+    }
     def quoted_string(quote: Char) = quote ~> stringcontent(quote) <~ quote
 
     (quoted_string('"') | quoted_string('\''))
@@ -53,7 +55,7 @@ class FtanParser extends RegexParsers {
         FtanElement.VALID_NAME ^^ {
           value => FtanString(value)
         }
-      def name: Parser[FtanString] = nameWithoutQuotes|string
+      def name: Parser[FtanString] = nameWithoutQuotes | string
       def pair: Parser[(FtanString, FtanValue)] =
         name ~ "=" ~ value ^^ {
           case name ~ sep ~ value => (name, value)
@@ -64,7 +66,7 @@ class FtanParser extends RegexParsers {
           case pair: (FtanString, FtanValue) => pair
         }
       firstpair ~ (pair*) ^^ {
-        case firstpair ~ tailpairs => new LinkedHashMap[FtanString,FtanValue]() += firstpair ++= tailpairs
+        case firstpair ~ tailpairs => new LinkedHashMap[FtanString, FtanValue]() += firstpair ++= tailpairs
       }
     }
     def content: Parser[FtanArray] = {
@@ -81,7 +83,7 @@ class FtanParser extends RegexParsers {
 
     "<" ~> (attributes?) ~ (("|" ~> content)?) <~ ">" ^^ {
       case attributes ~ content =>
-        val attrMap = attributes.getOrElse(new LinkedHashMap[FtanString,FtanValue])
+        val attrMap = attributes.getOrElse(new LinkedHashMap[FtanString, FtanValue])
         content.map { content => attrMap += FtanElement.CONTENT_KEY -> content }
         FtanElement(attrMap)
     }
@@ -90,7 +92,7 @@ class FtanParser extends RegexParsers {
   def value: Parser[FtanValue] =
     _null | boolean | number | string | array | element
 
-  def parse(exp : String) : FtanValue = {
+  def parse(exp: String): FtanValue = {
     this.value(new CharSequenceReader(exp)) match {
       case Success(result, rest) =>
         result
