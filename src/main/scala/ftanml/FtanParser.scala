@@ -51,7 +51,7 @@ class FtanParser extends RegexParsers {
   def element: Parser[FtanElement] = {
     def attributes: Parser[LinkedHashMap[FtanString, FtanValue]] = {
       def nameWithoutQuotes: Parser[FtanString] =
-        "[a-zA-Z][a-zA-Z0-9:_]*".r ^^ {
+        FtanElement.VALID_NAME ^^ {
           value => FtanString(value)
         }
       def name: Parser[FtanString] = nameWithoutQuotes|string
