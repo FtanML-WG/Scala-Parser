@@ -74,10 +74,10 @@ class ElementTest extends ParserTest with FlatSpec {
     "<'att\"r'=\"myValue\">" <-- FtanElement(FtanString("att\"r") -> FtanString("myValue")) <-- (
       "<'att\"r'=\"myValue\">", "<\"att\\\"r\"=\"myValue\">")
     "<\"€\">" <--> FtanElement(FtanElement.NAME_KEY -> FtanString("€"))
-    "<\"2\">" <--> FtanElement(FtanElement.NAME_KEY -> FtanString("2"))
+    "<\".2\">" <--> FtanElement(FtanElement.NAME_KEY -> FtanString(".2"))
 
     "<a123:4_5|myContent<innerName>afterContent>" <--> FtanElement(FtanElement.NAME_KEY -> FtanString("a123:4_5"), FtanElement.CONTENT_KEY -> FtanArray(FtanString("myContent"), FtanElement(FtanElement.NAME_KEY -> FtanString("innerName")), FtanString("afterContent")))
-    "<\"12\"|myContent<innerName>afterContent>" <--> FtanElement(FtanElement.NAME_KEY -> FtanString("12"), FtanElement.CONTENT_KEY -> FtanArray(FtanString("myContent"), FtanElement(FtanElement.NAME_KEY -> FtanString("innerName")), FtanString("afterContent")))
+    "<\".12\"|myContent<innerName>afterContent>" <--> FtanElement(FtanElement.NAME_KEY -> FtanString(".12"), FtanElement.CONTENT_KEY -> FtanArray(FtanString("myContent"), FtanElement(FtanElement.NAME_KEY -> FtanString("innerName")), FtanString("afterContent")))
     "<\"1.2\"|myContent<innerName>afterContent>" <--> FtanElement(FtanElement.NAME_KEY -> FtanString("1.2"), FtanElement.CONTENT_KEY -> FtanArray(FtanString("myContent"), FtanElement(FtanElement.NAME_KEY -> FtanString("innerName")), FtanString("afterContent")))
   }
 
@@ -119,21 +119,21 @@ class ElementTest extends ParserTest with FlatSpec {
                     FtanElement.CONTENT_KEY -> FtanArray(
                       FtanElement())))))),
             FtanString("after"))))) <--
-      "<'outer\\'tag' style='outer'|start<inner|<second attr=null|<content=['third',<content=[<>]>]>>after>>"
+      "<'outer\\'tag' style='outer'|start<inner|<second attr=null|<$content=['third',<$content=[<>]>]>>after>>"
   }
 
   they should "output invalid names as an attribute" in {
-    "<name=3.0>" <-- FtanElement(FtanElement.NAME_KEY -> FtanNumber(3)) <-- ("<name=3.0>", "<name=3>")
-    "<name=null>" <--> FtanElement(FtanElement.NAME_KEY -> FtanNull)
-    "<name=[\"bla\"]>" <--> FtanElement(FtanElement.NAME_KEY -> FtanArray(FtanString("bla")))
-    "<name=<bla>>" <--> FtanElement(FtanElement.NAME_KEY -> FtanElement(FtanElement.NAME_KEY -> FtanString("bla")))
-    "<name=1.2|myContent<innerName>afterContent>" <--> FtanElement(FtanElement.NAME_KEY -> FtanNumber(1.2), FtanElement.CONTENT_KEY -> FtanArray(FtanString("myContent"), FtanElement(FtanElement.NAME_KEY -> FtanString("innerName")), FtanString("afterContent")))
+    "<$name=3.0>" <-- FtanElement(FtanElement.NAME_KEY -> FtanNumber(3)) <-- ("<$name=3.0>", "<$name=3>")
+    "<$name=null>" <--> FtanElement(FtanElement.NAME_KEY -> FtanNull)
+    "<$name=[\"bla\"]>" <--> FtanElement(FtanElement.NAME_KEY -> FtanArray(FtanString("bla")))
+    "<$name=<bla>>" <--> FtanElement(FtanElement.NAME_KEY -> FtanElement(FtanElement.NAME_KEY -> FtanString("bla")))
+    "<$name=1.2|myContent<innerName>afterContent>" <--> FtanElement(FtanElement.NAME_KEY -> FtanNumber(1.2), FtanElement.CONTENT_KEY -> FtanArray(FtanString("myContent"), FtanElement(FtanElement.NAME_KEY -> FtanString("innerName")), FtanString("afterContent")))
   }
 
   they should "output invalid content as an attribute" in {
-    "<content=\"bla\">" <--> FtanElement(FtanElement.CONTENT_KEY -> FtanString("bla"))
-    "<content=[\"bla\",0.0]>" <--> FtanElement(FtanElement.CONTENT_KEY -> FtanArray(FtanString("bla"), FtanNumber(0)))
-    "<a1:2 content=[\"myContent\",<innerName>,1.0,\"afterContent\"]>" <--> FtanElement(FtanElement.NAME_KEY -> FtanString("a1:2"), FtanElement.CONTENT_KEY -> FtanArray(FtanString("myContent"), FtanElement(FtanElement.NAME_KEY -> FtanString("innerName")), FtanNumber(1.0), FtanString("afterContent")))
+    "<$content=\"bla\">" <--> FtanElement(FtanElement.CONTENT_KEY -> FtanString("bla"))
+    "<$content=[\"bla\",0.0]>" <--> FtanElement(FtanElement.CONTENT_KEY -> FtanArray(FtanString("bla"), FtanNumber(0)))
+    "<a1:2 $content=[\"myContent\",<innerName>,1.0,\"afterContent\"]>" <--> FtanElement(FtanElement.NAME_KEY -> FtanString("a1:2"), FtanElement.CONTENT_KEY -> FtanArray(FtanString("myContent"), FtanElement(FtanElement.NAME_KEY -> FtanString("innerName")), FtanNumber(1.0), FtanString("afterContent")))
   }
 
   they should "preserve the attribute order" in {
@@ -149,7 +149,7 @@ class ElementTest extends ParserTest with FlatSpec {
   }
 
   they should "be rejected, if wrong" in {
-    "<3>" invalid; //Invalid name
+    "<.3>" invalid; //Invalid name
     //TODO
   }
 }

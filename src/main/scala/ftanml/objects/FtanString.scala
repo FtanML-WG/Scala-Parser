@@ -81,7 +81,7 @@ case class FtanString(value: String) extends FtanValue with SizedObject {
   }
 
 
-  def isValidName = value.matches("[\\p{Alpha}][\\p{Alpha}\\p{Digit}_:]*")
+  def isValidName = value.matches("[\\p{Alpha}\\p{Digit}_:\\$]+")
 
 //  override def writeFtanMLName(writer: Writer) {
 //    if (isValidName)
