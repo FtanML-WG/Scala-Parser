@@ -63,7 +63,7 @@ class FtanParser extends RegexParsers {
       def firstpair: Parser[(FtanString, FtanValue)] =
         (pair | name) ^^ {
           case name: FtanString => FtanElement.NAME_KEY -> name
-          case pair: (FtanString, FtanValue) => pair
+          case (key:FtanString,value:FtanValue) => (key,value)
         }
       firstpair ~ (pair*) ^^ {
         case firstpair ~ tailpairs => new LinkedHashMap[FtanString, FtanValue]() += firstpair ++= tailpairs
