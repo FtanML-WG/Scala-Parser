@@ -4,6 +4,7 @@ import java.io.Reader
 import java.util.Stack
 import java.text.ParseException
 import java.io.StringReader
+import java.io.IOException
 
 object JsonReader {
 	def convertString(string: String) : String = {
@@ -19,6 +20,8 @@ class JsonReader(base: Reader) extends Reader {
 	private var inString = false
 	private var offset = 0
 	
+	@throws(classOf[IOException])
+	@throws(classOf[ParseException])
 	override def read: Int = {
 		val char = base.read
 		offset += 1
@@ -36,7 +39,8 @@ class JsonReader(base: Reader) extends Reader {
 			case _ => char
 		}
 	}
-	
+		
+	@throws(classOf[IOException])
 	override def read(cbuf: Array[Char], off: Int = 0, len: Int = -1): Int = {
 		val length = if(len == -1) cbuf.length else math.min(len, cbuf.length)
 		var i = 0
@@ -56,7 +60,8 @@ class JsonReader(base: Reader) extends Reader {
 			
 		i + 1
 	}
-
+	
+	@throws(classOf[IOException])
 	def close: Unit = {base.close}
 
 }
