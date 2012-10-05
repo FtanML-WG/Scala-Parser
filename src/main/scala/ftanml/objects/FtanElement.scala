@@ -6,8 +6,8 @@ import scala.collection.mutable.LinkedHashMap
 import ftanml.streams.Acceptor
 
 object FtanElement extends FtanElement(new LinkedHashMap[FtanString,FtanValue]) {
-  val NAME_KEY = new FtanString("name")
-  val CONTENT_KEY = new FtanString("content")
+  val NAME_KEY = new FtanString("$name")
+  val CONTENT_KEY = new FtanString("$content")
   
   val VALID_NAME = "[\\p{Alpha}\\p{Digit}_:\\$]+".r
   
