@@ -19,12 +19,12 @@ class BuilderTest extends ParserTest with FlatSpec {
     sw.toString
   }
 
-  def roundTrips(input:String) : Boolean = {
+  def roundTrips(input:String) {
     val afterParsing = parse(input)
     val builder = new ftanml.streams.Builder()
     afterParsing.send(builder)
     println(builder.value.toFtanML)
-    afterParsing == builder.value
+    afterParsing should_equal builder.value
   }
 
   "Nulls" should "effectively round-trip" in {

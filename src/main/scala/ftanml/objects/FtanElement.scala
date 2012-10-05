@@ -6,8 +6,8 @@ import scala.collection.mutable.LinkedHashMap
 import ftanml.streams.Acceptor
 
 object FtanElement extends FtanElement(new LinkedHashMap[FtanString,FtanValue]) {
-  val NAME_KEY = new FtanString("name")
-  val CONTENT_KEY = new FtanString("content")
+  val NAME_KEY = new FtanString("$name")
+  val CONTENT_KEY = new FtanString("$content")
   
   val VALID_NAME = "[\\p{Alpha}\\p{Digit}_:\\$]+".r
   
@@ -19,19 +19,10 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
   
   def this(attributes: Map[FtanString,FtanValue]) = this(new LinkedHashMap++=attributes)
 
-  def name: Option[String] = {
-     attributes.get(NAME_KEY) match {
-      case a : Some[FtanValue] => Some(a.get.asInstanceOf[FtanString].value)
-      case _ => None
-    }
-  }
+  def name: Option[String] =
+     attributes.get(NAME_KEY) map { _.asInstanceOf[FtanString].value }
 
-  def content: FtanArray = {
-     attributes.get(CONTENT_KEY) match {
-      case a : Some[FtanValue] => a.get.asInstanceOf[FtanArray]
-      case _ => FtanArray(Nil)
-    }
-  }
+  def content: FtanArray = attributes.get(CONTENT_KEY) map {_.asInstanceOf[FtanArray]} getOrElse FtanArray(Nil)
 
   def isEmptyContent: Boolean = content.values.isEmpty
 

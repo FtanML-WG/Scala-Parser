@@ -17,12 +17,9 @@ class ContentExpander(out : Acceptor) extends Filter(out) {
   override def processStartElement(name: Option[String]) {
     out.processStartElement(None)
     elementStack.push(false)
-    name match {
-      case Some(n) => {
+    name map { name=>
         out.processAttributeName(FtanElement.NAME_KEY.value)
-        out.processString(n)
-      }
-      case None =>
+        out.processString(name)
     }
   }
 
