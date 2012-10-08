@@ -76,4 +76,13 @@ object Unicode {
     }
   }
 
+  /**
+   * Count the number of integer codepoints in a string
+   */
+
+  def length(in: String):Int = {
+    (0 /: in) ((i: Int, ch: Char) => i + (if (ch.isLowSurrogate) 0 else 1))
+
+  }
+
 }

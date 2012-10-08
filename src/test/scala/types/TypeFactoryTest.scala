@@ -12,55 +12,77 @@ import util.TypeTest
 
 class TypeFactoryTest extends FlatSpec with TypeTest {
 
-  val parse = (TestParser.parse _) andThen { _.asInstanceOf[FtanElement] }
+  // TODO: convert to use the new syntax with no vertical bar when available
 
-  val booleanType = TypeFactory.makeType(parse("<boolean>"))
+  def theType (s: String) = TypeFactory.makeType(parsel(s))
 
-  val threeNumbers = TypeFactory.makeType(parse("<enum=[1,2,3]>"))
+  val parsel = (TestParser.parse _) andThen { _.asInstanceOf[FtanElement] }
 
-  val fixedNumber = TypeFactory.makeType(parse("<fixed=2>"))
+  val booleanType = TypeFactory.makeType(parsel("<boolean>"))
 
-  val anyString = TypeFactory.makeType(parse("<string>"));
+  val threeNumbers = TypeFactory.makeType(parsel("<enum=[1,2,3]>"))
 
-  val anyNumber = TypeFactory.makeType(parse("<number>"))
+  val fixedNumber = TypeFactory.makeType(parsel("<fixed=2>"))
 
-  val unionType = TypeFactory.makeType(parse("<anyOf=[<enum=[1,2,3]>, <fixed=2>, <string>]>"))
+  val anyString = TypeFactory.makeType(parsel("<string>"));
 
-  val allType = TypeFactory.makeType(parse("<number enum=[1,2,3] fixed=2>"))
-  
-  val itemType = TypeFactory.makeType(parse("<itemType=<boolean>>"))
+  val anyNumber = TypeFactory.makeType(parsel("<number>"))
 
-  val minMaxType = TypeFactory.makeType(parse("<min=5 max=10>"))
+  val unionType = TypeFactory.makeType(parsel("<anyOf|<enum=[1,2,3]><fixed=2><string>>"))
 
-  val minMaxExclusive = TypeFactory.makeType(parse("<minExclusive=5 maxExclusive=10>"))
+  val twoType = TypeFactory.makeType(parsel("<number enum=[1,2,3] fixed=2>"))
 
-  val minMaxWithExclusions = TypeFactory.makeType(parse("<min=-5 max=5 not=<fixed=0>>"))
-  
-  val nameType = TypeFactory.makeType(parse("<name='test'>"))
-  
-  val nameMatches = TypeFactory.makeType(parse("<nameMatches='[A-Z][a-z]+'>"))
+  val minMaxType = TypeFactory.makeType(parsel("<min=5 max=10>"))
 
-  val nullableFalse = TypeFactory.makeType(parse("<nullable=false>"))
+  val minMaxExclusive = TypeFactory.makeType(parsel("<minExclusive=5 maxExclusive=10>"))
 
-  val nullableTrue = TypeFactory.makeType(parse("<nullable=true>"))
+  val minMaxWithExclusions = TypeFactory.makeType(parsel("<allOf|<min=-5 max=5><not|<fixed=0>>>"))
 
-  val regexType = TypeFactory.makeType(parse("<regex='[0-9a-f]+'>"))
+  val nullableBoolean = TypeFactory.makeType(parsel("<nullable|<boolean>>"))
 
-  val anyType = TypeFactory.makeType(parse("<any>"))
+  val nullableString = TypeFactory.makeType(parsel("<nullable|<string>>"))
 
-  val voidType = TypeFactory.makeType(parse("<nothing>"))
+  val regexType = TypeFactory.makeType(parsel("<regex='[0-9a-f]+'>"))
 
-  "Values" should "be instances of factory-made Types" in {
+  val anyType = TypeFactory.makeType(parsel("<any>"))
+
+  val nothingType = TypeFactory.makeType(parsel("<nothing>"))
+
+  val notStringType = TypeFactory.makeType(parsel("<not|<string>>"))
+
+  "Booleans" should "be instances of factory-made Types" in {
     FtanBoolean(true) ==> booleanType
-    FtanTrue !=> allType
-    FtanNumber(2) ==> anyType
-    FtanNumber(2) ==> allType
-    FtanNumber(3) !=> allType
+    FtanTrue ==> anyType
+    FtanFalse ==> notStringType
+    FtanTrue ==> nullableBoolean
+    FtanTrue !=> anyString
+    FtanTrue !=> nothingType
+    FtanNull ==> nullableBoolean
+  }
+
+  "Strings" should "be instances of factory-made Types" in {
     FtanString("") ==> anyType
-    "[true, false]" ==> itemType
-    //doesn't work right now: Element names and content should not be matched, null attributes should be stripped when creating elements
-    // "<elem att1=null att2=false>" ==> itemType
-    "true" !=> itemType
+    FtanString("abc") ==> anyString
+    FtanString("") !=> nullableBoolean
+    FtanString("") ==> nullableString
+    FtanString("03f") ==> regexType
+    FtanString("03A") !=> regexType
+    FtanString("") !=> nothingType
+    FtanString("") ==> theType("<string size=0>")
+    FtanString("abc") ==> theType("<string size=3>")
+    FtanString("abc") !=> theType("<string size=2>")
+    TestParser.parse("\"\\x10000;\"") ==> theType("<string size=1>")
+  }
+
+  "Numbers" should "be instances of factory-made Types" in {
+    FtanNumber(2) ==> anyType
+    FtanNumber(2) ==> anyNumber
+    FtanNumber(2) ==> fixedNumber
+    FtanNumber(2) ==> twoType
+    FtanNumber(3) !=> twoType
+  }
+
+  "MoreNumbers"  should "be instances of factory-made Types" in {
     FtanNumber(5) ==> minMaxType
     FtanNumber(10) ==> minMaxType
     FtanNumber(11) !=> minMaxType
@@ -69,20 +91,26 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
     FtanNumber(10) !=> minMaxExclusive
     FtanNumber(8) ==> minMaxExclusive
     FtanNumber(0) !=> minMaxWithExclusions
-    "<test>" ==> nameType
-    "<>" !=> nameType
-    "<test2>" !=> nameType
-    "<Test>" ==> nameMatches
-    "<test>" !=> nameMatches
-    "<Test2>" !=> nameMatches
-    FtanNull !=> nullableFalse
-    FtanNull ==> nullableTrue
-    FtanFalse ==> nullableFalse
-    FtanString("") ==> nullableTrue
-    FtanString("03f") ==> regexType
-    FtanString("03A") !=> regexType
-    FtanString("") ==> anyType
-    FtanString("") !=> voidType
+  }
+
+  "Null" should "be instances of factory-made Types" in {
+    FtanNull ==> nullableBoolean
+    FtanNull ==> nullableString
+    FtanNull ==> anyType
+    FtanNull !=> anyString
+  }
+
+  "Arrays" should "be instances of factory-made Types" in {
+
+    TestParser.parse("[1,2,3]") ==> theType("<array>")
+    TestParser.parse("[1,2,3]") ==> theType("<nullable|<array>>")
+    TestParser.parse("[1,2,3]") ==> theType("<array size=3 itemType=<number>>")
+    TestParser.parse("[1,2,3]") ==> theType("<array size=3 itemType=<number min=1 max=3>>")
+    TestParser.parse("[1,2,3]") !=> theType("<array size=4>")
+    TestParser.parse("[1,2,3]") !=> theType("<array itemType=<boolean>>")
+    FtanNull !=> theType("<array>")
+    FtanNull ==> theType("<nullable|<array>>")
+
   }
 
 }

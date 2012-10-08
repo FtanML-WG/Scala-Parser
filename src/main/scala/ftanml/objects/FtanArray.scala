@@ -14,6 +14,11 @@ object FtanArray extends FtanArray(Nil) {
 case class FtanArray(values: Seq[FtanValue]) extends FtanValue with SizedObject {
 
   /**
+   * _(i) selects the i'th item of the FtanArray
+   */
+  def apply(i : Int) = values(i)
+
+  /**
    * Check, if this FtanArray can be output in the content area of a tag
    *
    * @return True, if this FtanArray could be used in the content area of a tag

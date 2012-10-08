@@ -103,5 +103,5 @@ case class FtanString(value: String) extends FtanValue with SizedObject {
     writer.append(escapeContent);
   }
 
-  def size = value.length
+  def size = Unicode.length(value)
 }
