@@ -47,12 +47,6 @@ object TypeFactory {
     makeType(e.content(0).asInstanceOf[FtanElement])
   }
 
-  def checkType(n: String,  v: FtanValue, t: FtanType) {
-    if (!v.isInstance(t)) {
-      throw new InvalidTypeException("In type descriptor, facet " + n + " must have type " + t)
-    }
-  }
-
   val facets = collection.immutable.HashMap[String, FtanValue => FtanType] (
     "fixed" -> ((v: FtanValue) => new FixedValueType(v)),
     "enum" -> ((v: FtanValue) => new EnumerationType(v.asInstanceOf[FtanArray].values)),
