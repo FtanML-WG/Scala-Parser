@@ -1,7 +1,6 @@
 package ftanml.types
 
-import collection.mutable.ListBuffer
-import ftanml.objects.{ FtanNumber, FtanArray, FtanString, FtanElement, FtanBoolean }
+import ftanml.objects._
 
 /**
  * The TypeFactory constructs types from FtanML elements that describe the type
@@ -9,61 +8,106 @@ import ftanml.objects.{ FtanNumber, FtanArray, FtanString, FtanElement, FtanBool
 
 object TypeFactory {
 
-  val primitives = collection.immutable.HashMap(
-    "string" -> StringType,
-    "number" -> NumberType,
-    "boolean" -> BooleanType,
-    "array" -> ArrayType,
-    "element" -> ElementType,
-    "any" -> AnyType,
-    "nothing" -> NothingType)
+  class InvalidTypeException(message: String) extends IllegalArgumentException(message){}
 
-  //TODO There are a lot of asInstanceOf that could fail. We should catch these errors and throw an exception.
+  val namedTypes = collection.immutable.HashMap[String, FtanElement => FtanType] (
+    "null" -> ((e: FtanElement) => {checkEmpty(e); NullType}),
+    "string" -> ((e: FtanElement) => {checkEmpty(e); StringType}),
+    "number" -> ((e: FtanElement) => {checkEmpty(e); NumberType}),
+    "boolean" -> ((e: FtanElement) => {checkEmpty(e); BooleanType}),
+    "array" -> ((e: FtanElement) => {checkEmpty(e); ArrayType}),
+    "element" -> ((e: FtanElement) => {checkEmpty(e); ElementType}),
+    "any" -> ((e: FtanElement) => {checkEmpty(e); AnyType}),
+    "nothing" -> ((e: FtanElement) => {checkEmpty(e); NothingType}),
+    "nullable" -> ((e: FtanElement) => {new AnyOfType(List(NullType, singletonContentType(e)))}),
+    "not" -> ((e: FtanElement) => {new ComplementType(singletonContentType(e))}),
+    "anyOf" -> ((e: FtanElement) => {new AnyOfType(contentTypes(e))}),
+    "allOf" -> ((e: FtanElement) => {new AllOfType(contentTypes(e))})
+  )
+
+  def checkEmpty(e: FtanElement) {
+    if (!e.isEmptyContent) {
+      throw new InvalidTypeException("Type descriptor <" + e.name + "> must be empty")
+    }
+  }
+
+  def contentTypes(e: FtanElement) : Traversable[FtanType] = {
+    if (!e.isElementOnlyContent) {
+      throw new InvalidTypeException("Type descriptor <" + e.name + "> must have element-only content")
+    }
+    e.content.values.map({ t: FtanValue =>
+                makeType(t.asInstanceOf[FtanElement])
+              })
+  }
+
+  def singletonContentType(e: FtanElement) : FtanType = {
+    if (!(e.isElementOnlyContent && e.content.size == 1)) {
+      throw new InvalidTypeException("Type descriptor <" + e.name + "> must have a single element as its content")
+    }
+    makeType(e.content(0).asInstanceOf[FtanElement])
+  }
+
+  def checkType(n: String,  v: FtanValue, t: FtanType) {
+    if (!v.isInstance(t)) {
+      throw new InvalidTypeException("In type descriptor, facet " + n + " must have type " + t)
+    }
+  }
+
+  val facets = collection.immutable.HashMap[String, FtanValue => FtanType] (
+    "fixed" -> ((v: FtanValue) => new FixedValueType(v)),
+    "enum" -> ((v: FtanValue) => new EnumerationType(v.asInstanceOf[FtanArray].values)),
+    "itemType" -> ((v: FtanValue) => new ItemType(makeType(v.asInstanceOf[FtanElement]))),
+    "min" -> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], false)),
+    "minExclusive"-> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], true)),
+    "max"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], false)),
+    "maxExclusive"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], true)),
+    "name"-> ((v: FtanValue) => new NameType(v.asInstanceOf[FtanString], false)),
+    "nameMatches"-> ((v: FtanValue) => new NameType(v.asInstanceOf[FtanString], true)),
+    "regex"-> ((v: FtanValue) => new RegexType(v.asInstanceOf[FtanString])),
+    "size"-> ((v: FtanValue) => new SizeType(v.asInstanceOf[FtanNumber]))
+  )
+
+  val facetTypes = collection.immutable.HashMap[String, FtanType] (
+    "fixed" -> AnyType,
+    "enum" -> ArrayType,
+    "itemType" -> ElementType,
+    "min" -> NumberType,
+    "minExclusive"-> NumberType,
+    "max"-> NumberType,
+    "maxExclusive"-> NumberType,
+    "name"-> StringType,
+    "nameMatches"-> StringType,
+    "regex"-> StringType,
+    "size"-> NumberType
+  )
+
+
+
+
   def makeType(element: FtanElement): FtanType = {
     val memberTypes = {
       for ((name, value) <- element.attributes) yield {
         name.value match {
           case FtanElement.NAME_KEY.value =>
             val str = value.asInstanceOf[FtanString].value
-            primitives.get(str) match {
-              case Some(t) => t
-              //TODO Better throw an exception than write on stderr. We write a library.
-              case _ => sys.error("Unknown primitive type " + str)
+            namedTypes.get(str) match {
+              case Some(t) => t.asInstanceOf[FtanElement => FtanType](element)
+              case _ => throw new InvalidTypeException("Unknown type name <" + str + ">")
             }
-          case "fixed" =>
-            new FixedValueType(value)
-          case "enum" =>
-            new EnumerationType(value.asInstanceOf[FtanArray].values)
-          case "itemType" =>
-          	new ItemType(makeType(value.asInstanceOf[FtanElement]))
-          case "min" =>
-            new MinValueType(value.asInstanceOf[FtanNumber], false)
-          case "minExclusive" =>
-            new MinValueType(value.asInstanceOf[FtanNumber], true)
-          case "max" =>
-            new MaxValueType(value.asInstanceOf[FtanNumber], false)
-          case "maxExclusive" =>
-            new MaxValueType(value.asInstanceOf[FtanNumber], true)
-          case "name" =>
-          	new NameType(value.asInstanceOf[FtanString], false)
-          case "nameMatches" =>
-          	new NameType(value.asInstanceOf[FtanString], true)
-          case "not" =>
-            new ComplementType(makeType(value.asInstanceOf[FtanElement]))
-          case "nullable" =>
-            new NullableType(value.asInstanceOf[FtanBoolean])
-          case "regex" =>
-            new RegexType(value.asInstanceOf[FtanString])
-          case "anyOf" =>
-            new AnyOfType(
-              value.asInstanceOf[FtanArray].values.map { t =>
-                makeType(t.asInstanceOf[FtanElement])
-              })
-          case "allOf" =>
-            new AllOfType(
-              value.asInstanceOf[FtanArray].values.map { t =>
-                makeType(t.asInstanceOf[FtanElement])
-              })
+          case _ =>
+            facetTypes.get(name.value) match {
+              case Some(t) =>
+                if (!value.isInstance(t)) {
+                  throw new InvalidTypeException("Invalid value for " + name.value + " facet")
+                }
+              case _ =>
+            }
+            facets.get(name.value) match {
+              case Some(t) => {
+                t.asInstanceOf[FtanValue => FtanType](value)
+              }
+              case _ => AnyType  // ignore unrecognized facets
+            }
         }
       }
     }

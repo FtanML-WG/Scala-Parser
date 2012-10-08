@@ -39,3 +39,9 @@ object ElementType extends FtanType {
     value.isInstanceOf[FtanElement]
   }
 }
+
+object NullType extends FtanType {
+  override def matches(value: FtanValue) = {
+    value == FtanNull
+  }
+}

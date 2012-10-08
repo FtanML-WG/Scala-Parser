@@ -18,6 +18,7 @@ class PrimitiveTypeTest extends FlatSpec with TypeTest {
     "true" ==> BooleanType
     "false" ==> BooleanType
     "[]" !=> BooleanType
+    FtanNull !=> BooleanType
   }
 
   "Numbers" should "be instances of NumberType" in {
@@ -25,6 +26,7 @@ class PrimitiveTypeTest extends FlatSpec with TypeTest {
     FtanNumber(82.6) !=> StringType
     "1.23" ==> NumberType
     "true" !=> NumberType
+    FtanNull !=> NumberType
   }
 
   "Strings" should "be instances of StringType" in {
@@ -32,6 +34,7 @@ class PrimitiveTypeTest extends FlatSpec with TypeTest {
     FtanString("123") !=> NumberType
     "\"foo\"" ==> StringType
     "123" !=> StringType
+    FtanNull !=> StringType
   }
 
   "Arrays" should "be instances of ArrayType" in {
@@ -43,6 +46,7 @@ class PrimitiveTypeTest extends FlatSpec with TypeTest {
     "[]" ==> ArrayType
     "[[],[]]" ==> ArrayType
     "[1,2,3]" ==> ArrayType
+    FtanNull !=> ArrayType
   }
 
   "Elements" should  "be instances of ElementType" in {
@@ -50,6 +54,15 @@ class PrimitiveTypeTest extends FlatSpec with TypeTest {
     "<b>" ==> ElementType
     "<b|>" ==> ElementType
     "<b foo=[1,2,3]|>" ==> ElementType
+    FtanNull !=> ElementType
+  }
+
+  "Null" should "match NullType" in {
+    "null" ==> NullType
+    "23" !=> NullType
+    "[]" !=> NullType
+    FtanString("") !=> NullType
+    "<>" !=> NullType
   }
 
   "Everything" should "match AnyType" in  {
