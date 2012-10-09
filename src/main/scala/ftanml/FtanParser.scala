@@ -11,7 +11,7 @@ import ftanml.objects.FtanString
 import ftanml.objects.FtanElement
 import scala.collection.mutable.LinkedHashMap
 
-class FtanParser extends RegexParsers {
+class FtanParser extends RegexParsers with DebugParser {
   def _null: Parser[FtanNull.type] =
     "null" ^^^ (FtanNull)
 
