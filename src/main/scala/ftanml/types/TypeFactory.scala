@@ -48,36 +48,19 @@ object TypeFactory {
     makeType(e.content(0))
   }
 
-  val facets = collection.immutable.HashMap[String, FtanValue => FtanType] (
-    "fixed" -> ((v: FtanValue) => new FixedValueType(v)),
-    "enum" -> ((v: FtanValue) => new EnumerationType(v.values)),
-    "itemType" -> ((v: FtanValue) => new ItemType(makeType(v))),
-    "min" -> ((v: FtanValue) => new MinValueType(v, false)),
-    "minExclusive"-> ((v: FtanValue) => new MinValueType(v, true)),
-    "max"-> ((v: FtanValue) => new MaxValueType(v, false)),
-    "maxExclusive"-> ((v: FtanValue) => new MaxValueType(v, true)),
-    "name"-> ((v: FtanValue) => new NameType(v, false)),
-    "nameMatches"-> ((v: FtanValue) => new NameType(v, true)),
-    "regex"-> ((v: FtanValue) => new RegexType(v)),
-    "size"-> ((v: FtanValue) => new SizeType(v))
+  val facets = collection.immutable.HashMap[String, (FtanType, FtanValue => FtanType)] (
+    "fixed" -> (AnyType, (v: FtanValue) => new FixedValueType(v)),
+    "enum" -> (ArrayType, (v: FtanValue) => new EnumerationType(v.values)),
+    "itemType" -> (ElementType, (v: FtanValue) => new ItemType(makeType(v))),
+    "min" -> (NumberType, (v: FtanValue) => new MinValueType(v, false)),
+    "minExclusive"-> (NumberType, (v: FtanValue) => new MinValueType(v, true)),
+    "max"-> (NumberType, (v: FtanValue) => new MaxValueType(v, false)),
+    "maxExclusive"-> (NumberType, (v: FtanValue) => new MaxValueType(v, true)),
+    "name"-> (StringType, (v: FtanValue) => new NameType(v, false)),
+    "nameMatches"-> (StringType, (v: FtanValue) => new NameType(v, true)),
+    "regex"-> (StringType, (v: FtanValue) => new RegexType(v)),
+    "size"-> (NumberType, (v: FtanValue) => new SizeType(v))
   )
-
-  val facetTypes = collection.immutable.HashMap[String, FtanType] (
-    "fixed" -> AnyType,
-    "enum" -> ArrayType,
-    "itemType" -> ElementType,
-    "min" -> NumberType,
-    "minExclusive"-> NumberType,
-    "max"-> NumberType,
-    "maxExclusive"-> NumberType,
-    "name"-> StringType,
-    "nameMatches"-> StringType,
-    "regex"-> StringType,
-    "size"-> NumberType
-  )
-
-
-
 
   def makeType(element: FtanElement): FtanType = {
     val memberTypes = {
@@ -90,16 +73,12 @@ object TypeFactory {
               case _ => throw new InvalidTypeException("Unknown type name <" + str + ">")
             }
           case _ =>
-            facetTypes.get(name.value) match {
-              case Some(t) =>
-                if (!value.isInstance(t)) {
-                  throw new InvalidTypeException("Invalid value for " + name.value + " facet")
-                }
-              case _ =>
-            }
             facets.get(name.value) match {
-              case Some(t) => {
-                t(value)
+              case Some((t: FtanType, f: (FtanValue => FtanType))) => {
+              	if(!value.isInstance(t)){
+              		throw new InvalidTypeException("Invalid value for " + name.value + " facet")
+              	}
+                f(value)
               }
               case _ => AnyType  // ignore unrecognized facets
             }
