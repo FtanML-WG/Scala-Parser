@@ -1,6 +1,7 @@
 package ftanml.types
 
 import ftanml.objects._
+import ftanml.util.Implicits._
 
 /**
  * The TypeFactory constructs types from FtanML elements that describe the type
@@ -36,7 +37,7 @@ object TypeFactory {
       throw new InvalidTypeException("Type descriptor <" + e.name + "> must have element-only content")
     }
     e.content.values.map({ t: FtanValue =>
-                makeType(t.asInstanceOf[FtanElement])
+                makeType(t)
               })
   }
 
@@ -44,21 +45,21 @@ object TypeFactory {
     if (!(e.isElementOnlyContent && e.content.size == 1)) {
       throw new InvalidTypeException("Type descriptor <" + e.name + "> must have a single element as its content")
     }
-    makeType(e.content(0).asInstanceOf[FtanElement])
+    makeType(e.content(0))
   }
 
   val facets = collection.immutable.HashMap[String, FtanValue => FtanType] (
     "fixed" -> ((v: FtanValue) => new FixedValueType(v)),
-    "enum" -> ((v: FtanValue) => new EnumerationType(v.asInstanceOf[FtanArray].values)),
-    "itemType" -> ((v: FtanValue) => new ItemType(makeType(v.asInstanceOf[FtanElement]))),
-    "min" -> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], false)),
-    "minExclusive"-> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], true)),
-    "max"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], false)),
-    "maxExclusive"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], true)),
-    "name"-> ((v: FtanValue) => new NameType(v.asInstanceOf[FtanString], false)),
-    "nameMatches"-> ((v: FtanValue) => new NameType(v.asInstanceOf[FtanString], true)),
-    "regex"-> ((v: FtanValue) => new RegexType(v.asInstanceOf[FtanString])),
-    "size"-> ((v: FtanValue) => new SizeType(v.asInstanceOf[FtanNumber]))
+    "enum" -> ((v: FtanValue) => new EnumerationType(v.values)),
+    "itemType" -> ((v: FtanValue) => new ItemType(makeType(v))),
+    "min" -> ((v: FtanValue) => new MinValueType(v, false)),
+    "minExclusive"-> ((v: FtanValue) => new MinValueType(v, true)),
+    "max"-> ((v: FtanValue) => new MaxValueType(v, false)),
+    "maxExclusive"-> ((v: FtanValue) => new MaxValueType(v, true)),
+    "name"-> ((v: FtanValue) => new NameType(v, false)),
+    "nameMatches"-> ((v: FtanValue) => new NameType(v, true)),
+    "regex"-> ((v: FtanValue) => new RegexType(v)),
+    "size"-> ((v: FtanValue) => new SizeType(v))
   )
 
   val facetTypes = collection.immutable.HashMap[String, FtanType] (
