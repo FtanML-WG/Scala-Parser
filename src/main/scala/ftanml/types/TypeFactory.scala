@@ -25,6 +25,20 @@ object TypeFactory {
     "anyOf" -> ((e: FtanElement) => {new AnyOfType(contentTypes(e))}),
     "allOf" -> ((e: FtanElement) => {new AllOfType(contentTypes(e))})
   )
+  
+  val facets = collection.immutable.HashMap[String, (FtanType, FtanValue => FtanType)] (
+    "fixed" -> (AnyType, (v: FtanValue) => new FixedValueType(v)),
+    "enum" -> (ArrayType, (v: FtanValue) => new EnumerationType(v.values)),
+    "itemType" -> (ElementType, (v: FtanValue) => new ItemType(makeType(v))),
+    "min" -> (NumberType, (v: FtanValue) => new MinValueType(v, false)),
+    "minExclusive"-> (NumberType, (v: FtanValue) => new MinValueType(v, true)),
+    "max"-> (NumberType, (v: FtanValue) => new MaxValueType(v, false)),
+    "maxExclusive"-> (NumberType, (v: FtanValue) => new MaxValueType(v, true)),
+    "name"-> (StringType, (v: FtanValue) => new NameType(v, false)),
+    "nameMatches"-> (StringType, (v: FtanValue) => new NameType(v, true)),
+    "regex"-> (StringType, (v: FtanValue) => new RegexType(v)),
+    "size"-> (NumberType, (v: FtanValue) => new SizeType(v))
+  )
 
   def checkEmpty(e: FtanElement) {
     if (!e.isEmptyContent) {
@@ -47,20 +61,6 @@ object TypeFactory {
     }
     makeType(e.content(0))
   }
-
-  val facets = collection.immutable.HashMap[String, (FtanType, FtanValue => FtanType)] (
-    "fixed" -> (AnyType, (v: FtanValue) => new FixedValueType(v)),
-    "enum" -> (ArrayType, (v: FtanValue) => new EnumerationType(v.values)),
-    "itemType" -> (ElementType, (v: FtanValue) => new ItemType(makeType(v))),
-    "min" -> (NumberType, (v: FtanValue) => new MinValueType(v, false)),
-    "minExclusive"-> (NumberType, (v: FtanValue) => new MinValueType(v, true)),
-    "max"-> (NumberType, (v: FtanValue) => new MaxValueType(v, false)),
-    "maxExclusive"-> (NumberType, (v: FtanValue) => new MaxValueType(v, true)),
-    "name"-> (StringType, (v: FtanValue) => new NameType(v, false)),
-    "nameMatches"-> (StringType, (v: FtanValue) => new NameType(v, true)),
-    "regex"-> (StringType, (v: FtanValue) => new RegexType(v)),
-    "size"-> (NumberType, (v: FtanValue) => new SizeType(v))
-  )
 
   def makeType(element: FtanElement): FtanType = {
     val memberTypes = {
