@@ -26,8 +26,14 @@ object Unicode {
     }
   }
 
+  /**
+   * Ask if a 16-bit char is a high surrogate character
+   */
   def isHighSurrogate(ch: Char) = ch >= SURROGATE1_MIN && ch <= SURROGATE1_MAX
 
+    /**
+   * Ask if a 16-bit char is a low surrogate character
+   */
   def isLowSurrogate(ch: Char) = ch >= SURROGATE2_MIN && ch <= SURROGATE2_MAX
 
   /**
@@ -50,7 +56,6 @@ object Unicode {
 
   /**
    * Return the non-BMP character corresponding to a given surrogate pair
-   * surrogates.
    * @param high The high surrogate.
    * @param low The low surrogate.
    * @return the Unicode codepoint represented by the surrogate pair

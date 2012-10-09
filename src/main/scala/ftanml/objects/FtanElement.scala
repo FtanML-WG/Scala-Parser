@@ -1,7 +1,5 @@
 package ftanml.objects
 
-import java.io.Writer
-
 import scala.collection.mutable.LinkedHashMap
 import ftanml.streams.Acceptor
 
@@ -19,6 +17,8 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
   
   def this(attributes: Map[FtanString,FtanValue]) = this(new LinkedHashMap++=attributes)
 
+  def apply(attName: FtanString) : FtanValue = attributes.getOrElse(attName, FtanNull)
+
   def name: Option[String] =
      attributes.get(NAME_KEY) map { _.asInstanceOf[FtanString].value }
 
@@ -32,12 +32,6 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
 
   def isMixedContent: Boolean = content.values.exists(_.isInstanceOf[FtanElement]) && content.values.exists(_.isInstanceOf[FtanString])
 
-
-
-
-//  def writeFtanMLContent(writer: Writer) {
-//    writeFtanML(writer)
-//  }
 
   override def send(acceptor: Acceptor) {
     acceptor.processStartElement(name)

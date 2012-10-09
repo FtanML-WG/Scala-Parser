@@ -40,7 +40,10 @@ class StringTest extends ParserTest with WordSpec {
     "escape correctly, when used in content area" in {
       def createContentElement(content: String) = FtanElement(FtanElement.CONTENT_KEY -> FtanArray(Seq(FtanString(content))))
       "<|bla>" <--> createContentElement("bla")
-      "<|bla\\<\\\\\\>>" <--> createContentElement("bla<\\>")
+      "<|ble\\<>" <--> createContentElement("ble<")
+      "<|blu\\<\\\\\\>>" <--> createContentElement("blu<\\>")
+      "<|flu\\\\n>" <--> createContentElement("flu\n")
+      "<|flo\\\\n>" <-- createContentElement("flo\n") <-- "<|flo\\n>"
       "<|\\<\\>|'\"\\\\\b\f\n\r\t€/\"\\>\\<€€€€'>" <-- createContentElement("<>|'\"\\\b\f\n\r\t€/\"><€€€€'") <-- "<|\\<\\>|\\\'\"\\\\\\b\\f\\n\\r\\t€\\/\\\"\\>\\<\\u20ac\\u20aC\\u20Ac\\u20AC'>"
 //      "<|\\u0041>" <-- createContentElement("A")
 //      "<|\\x0041;>" <-- createContentElement("A")

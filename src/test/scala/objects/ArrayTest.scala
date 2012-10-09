@@ -31,7 +31,7 @@ class ArrayTest extends ParserTest with FlatSpec {
     "[\"bla\"]" <--> FtanArray(FtanString("bla"))
     "[2.34]" <--> FtanArray(FtanNumber(2.34))
     "[2.34,23.4]" <-- FtanArray(FtanNumber(2.34), FtanNumber(23.4)) <-- "[2.34,2.34e1]"
-    "[1.23,'bl\"a',false,null,[1.0,null]]" <--
+    "[1.23,'bl\"a',false,null,[1,null]]" <--
       FtanArray(FtanNumber(1.23), FtanString("bl\"a"), FtanBoolean(false), FtanNull, FtanArray(FtanNumber(1), FtanNull)) <-- (
         "[1.23,'bl\"a',false,null,[1.0,null]]",
         "[12.3e-1,\"bl\\\"a\",false,null,[1e+0,null]]")

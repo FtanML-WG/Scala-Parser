@@ -2,14 +2,18 @@ package ftanml.types
 
 import ftanml.objects.{FtanValue, FtanString, FtanElement}
 
-class NameType(name: FtanString, regex: Boolean) extends FtanType {
+/**
+ * A NameType is a facet applied to elements, that constrains the name of the
+ * element to have a particular type. If the type is nullable, then the element
+ * name is optional, but if present it must conform to the type given. Common uses
+ * are to constrain the name to a particular string (denoted by a FixedValueTest),
+ * an enumeration of alternatives, or a regular expression.
+ */
+
+class NameType(theType : FtanType) extends FtanType {
   def matches(value: FtanValue) = {
     value match {
-      case v: FtanElement => v.attributes.contains(FtanElement.NAME_KEY) && (
-      		if(regex)
-      			("^" + name.value + "$").r.findFirstIn(v.attributes(FtanElement.NAME_KEY).asInstanceOf[FtanString].value) != None
-      		else
-      			v.attributes(FtanElement.NAME_KEY) == name)
+      case v: FtanElement => v(FtanElement.NAME_KEY).isInstance(theType)
       case _ => false
     }
   }

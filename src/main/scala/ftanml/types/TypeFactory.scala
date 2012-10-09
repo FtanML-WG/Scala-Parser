@@ -17,16 +17,17 @@ object TypeFactory {
     "number" -> ((e: FtanElement) => {checkEmpty(e); NumberType}),
     "boolean" -> ((e: FtanElement) => {checkEmpty(e); BooleanType}),
     "array" -> ((e: FtanElement) => {checkEmpty(e); ArrayType}),
-    "element" -> ((e: FtanElement) => {checkEmpty(e); ElementType}),
+    "element" -> ((e: FtanElement) => {if (e.isEmptyContent) ElementType else elementProforma(singletonChildElement(e))}),
     "any" -> ((e: FtanElement) => {checkEmpty(e); AnyType}),
     "nothing" -> ((e: FtanElement) => {checkEmpty(e); NothingType}),
-    "nullable" -> ((e: FtanElement) => {new AnyOfType(List(NullType, singletonContentType(e)))}),
-    "not" -> ((e: FtanElement) => {new ComplementType(singletonContentType(e))}),
+    "nullable" -> ((e: FtanElement) => {new AnyOfType(List(NullType, makeType(singletonChildElement(e))))}),
+    "not" -> ((e: FtanElement) => {new ComplementType(makeType(singletonChildElement(e)))}),
     "anyOf" -> ((e: FtanElement) => {new AnyOfType(contentTypes(e))}),
     "allOf" -> ((e: FtanElement) => {new AllOfType(contentTypes(e))})
   )
   
   val facets = collection.immutable.HashMap[String, (FtanType, FtanValue => FtanType)] (
+  	"attName" -> (ElementType, (v: FtanValue) => new AttNameType(makeType(v.asInstanceOf[FtanElement]))),
     "fixed" -> (AnyType, (v: FtanValue) => new FixedValueType(v)),
     "enum" -> (ArrayType, (v: FtanValue) => new EnumerationType(v.values)),
     "itemType" -> (ElementType, (v: FtanValue) => new ItemType(makeType(v))),
@@ -34,8 +35,8 @@ object TypeFactory {
     "minExclusive"-> (NumberType, (v: FtanValue) => new MinValueType(v, true)),
     "max"-> (NumberType, (v: FtanValue) => new MaxValueType(v, false)),
     "maxExclusive"-> (NumberType, (v: FtanValue) => new MaxValueType(v, true)),
-    "name"-> (StringType, (v: FtanValue) => new NameType(v, false)),
-    "nameMatches"-> (StringType, (v: FtanValue) => new NameType(v, true)),
+    "name"-> (ElementType, (v: FtanValue) => new NameType(makeType(v.asInstanceOf[FtanElement]))),
+    //"nameMatches"-> (StringType, (v: FtanValue) => new NameType(v, true)),
     "regex"-> (StringType, (v: FtanValue) => new RegexType(v)),
     "size"-> (NumberType, (v: FtanValue) => new SizeType(v))
   )
@@ -55,11 +56,38 @@ object TypeFactory {
               })
   }
 
-  def singletonContentType(e: FtanElement) : FtanType = {
+  def singletonChildElement(e: FtanElement) : FtanElement = {
     if (!(e.isElementOnlyContent && e.content.size == 1)) {
       throw new InvalidTypeException("Type descriptor <" + e.name + "> must have a single element as its content")
     }
-    makeType(e.content(0))
+    (e.content(0).asInstanceOf[FtanElement])
+  }
+
+  def elementProforma(element: FtanElement) : FtanType = {
+    val memberTypes : Traversable[FtanType] = {
+      for ((name, value) <- element.attributes) yield {
+        name match {
+          case FtanElement.NAME_KEY =>
+            new NameType(new FixedValueType(value))
+          case FtanElement.CONTENT_KEY =>
+            NullType // TODO (ignore for now)
+          case _ =>
+            if (!value.isInstanceOf[FtanElement]) {
+              throw new InvalidTypeException("Invalid value for attribute " + name + " in element proforma: expected a type")
+            }
+            new AttributeType(name, makeType(value))
+
+        }
+      }
+    }
+
+    if(memberTypes.size == 0) {
+      ElementType
+    } else if (memberTypes.size == 1) {
+      memberTypes.head
+    } else {
+      new AllOfType(memberTypes)
+    }
   }
 
   def makeType(element: FtanElement): FtanType = {

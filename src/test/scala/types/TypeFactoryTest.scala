@@ -74,6 +74,13 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
     TestParser.parse("\"\\x10000;\"") ==> theType("<string size=1>")
   }
 
+  "Enumerations" should "be instances of enumeration types" in  {
+    FtanNumber(3) ==> theType("<enum=[1,2,3,4]>")
+    FtanNumber(5) !=> theType("<enum=[1,2,3,4]>")
+    FtanNumber(5) !=> theType("<enum=['a','b','c','d']>")
+    FtanString("b") ==> theType("<enum=['a','b','c','d']>")
+  }
+
   "Numbers" should "be instances of factory-made Types" in {
     FtanNumber(2) ==> anyType
     FtanNumber(2) ==> anyNumber
@@ -101,7 +108,6 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
   }
 
   "Arrays" should "be instances of factory-made Types" in {
-
     TestParser.parse("[1,2,3]") ==> theType("<array>")
     TestParser.parse("[1,2,3]") ==> theType("<nullable|<array>>")
     TestParser.parse("[1,2,3]") ==> theType("<array size=3 itemType=<number>>")
@@ -110,7 +116,31 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
     TestParser.parse("[1,2,3]") !=> theType("<array itemType=<boolean>>")
     FtanNull !=> theType("<array>")
     FtanNull ==> theType("<nullable|<array>>")
-
   }
 
+  "EmptyElements" should "be instances of element types" in {
+    TestParser.parse("<e>") ==> theType("<element>")
+    TestParser.parse("<e>") ==> theType("<element|<e>>")
+    TestParser.parse("<e a=3>") ==> theType("<element|<e a=<number max=3>>>")
+    TestParser.parse("<e>") ==> theType("<element|<e a=<nullable|<number max=3>>>>")
+    TestParser.parse("<e a=[]>") !=> theType("<element|<e a=<number>>>")
+    TestParser.parse("<e b=5>") ==> theType("<element|<e a=<nullable|<number max=3>>>>")
+    TestParser.parse("<e a=3>") ==> theType("<element|<a=<number max=3>>>")
+  }
+
+  "NamedElements" should "be instances of element types" in {
+    TestParser.parse("<e>") ==> theType("<element name=<fixed='e'>>")
+    TestParser.parse("<e>") ==> theType("<element name=<regex='[a-z]'>>")
+    TestParser.parse("<a>") ==> theType("<element name=<enum=['a','b','c','d']>>")
+    TestParser.parse("<h>") !=> theType("<element name=<fixed='e'>>")
+    TestParser.parse("<H>") !=> theType("<element name=<regex='[a-z]'>>")
+    TestParser.parse("<h>") !=> theType("<element name=<enum=['e','f','g']>>")
+  }
+
+  "RestrictedElements" should "be instances of attName types" in  {
+    TestParser.parse("<a=3 b=4>") ==> theType("<element attName=<enum=['a','b']>>")
+    TestParser.parse("<a=3 f=4>") !=> theType("<element attName=<enum=['a','b']>>")
+    TestParser.parse("<eeee a=3 f=4 |content>") ==> theType("<element attName=<regex='[a-g]'>>")
+    TestParser.parse("<eeee a=3 h=4 |content>") !=> theType("<element attName=<regex='[a-g]'>>")
+  }
 }

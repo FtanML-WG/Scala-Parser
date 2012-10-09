@@ -48,10 +48,10 @@ class FixedValueTest extends FlatSpec with TypeTest {
   }
 
   "Arrays" should "be instances of Fixed ArrayType" in {
-    FtanArray(FtanTrue, FtanFalse) ==> new FixedValueType(parse("[true, false]"))
-    FtanArray(FtanString("a"), FtanString("b")) ==> new FixedValueType(parse("['a', 'b']"))
+    FtanArray(FtanTrue, FtanFalse) ==> new FixedValueType(parse("[true,false]"))
+    FtanArray(FtanString("a"), FtanString("b")) ==> new FixedValueType(parse("['a','b']"))
     FtanArray() ==> new FixedValueType(parse("[]"))
-    FtanArray(FtanTrue, FtanFalse) !=> new FixedValueType(parse("[true, false, true]"))
+    FtanArray(FtanTrue, FtanFalse) !=> new FixedValueType(parse("[true,false,true]"))
     FtanArray(FtanString("a"), FtanString("b")) !=> new FixedValueType(parse("['a']"))
     FtanArray() !=> new FixedValueType(parse("[null]"))
   }

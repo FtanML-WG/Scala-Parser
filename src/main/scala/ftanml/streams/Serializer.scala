@@ -33,7 +33,7 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
 
   def processString(value: String) {
     if (!stack.isEmpty && (stack.top == inContent)) {
-      writer.append(escapedValue(value, '\\'))
+      writer.append(escapedValue(value, '<'))
     } else {
       preValue()
       formatString(value)
@@ -57,6 +57,14 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
 
   }
 
+  /**
+   * Backslash-escape any characters in a string that need to be escaped.
+   * @param usedQuote the string delimiter (single or double quotes) if the
+   * string is to be output in quotes, or the character "<" if the string is
+   * to be output as part of mixed content (in which case "<" and ">" need
+   * to be escaped)
+   */
+
   protected def escapedValue(value: String, usedQuote: Char): String = {
     def escapeChar(input: Int): String = input match {
       case '\\' => "\\\\"
@@ -65,6 +73,8 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
       case '\n' => "\\n"
       case '\r' => "\\r"
       case '\t' => "\\t"
+      case '<' => if ('<' == usedQuote) "\\<" else "<"
+      case '>' => if ('<' == usedQuote) "\\>" else ">"
       case char if char == usedQuote => "\\" + usedQuote
       case other =>
         if (other >= Unicode.NONBMP_MIN) {
@@ -131,9 +141,10 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
   }
 
   def processStartContent(isElementOnly: Boolean) {
-    if (!isElementOnly) {
+    // TODO: omit "|" for element-only content. But note that tests in ElementTest will have to change
+    //if (!isElementOnly) {
       writer.append("|")
-    }
+    //}
     replaceTop(inContent)
   }
 
