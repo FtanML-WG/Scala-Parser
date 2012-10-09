@@ -11,7 +11,7 @@ import ftanml.objects.FtanString
 import ftanml.objects.FtanElement
 import scala.collection.mutable.LinkedHashMap
 
-class FtanParser extends RegexParsers {
+class FtanParser extends RegexParsers with DebugParser {
   def _null: Parser[FtanNull.type] =
     "null" ^^^ (FtanNull)
 
@@ -39,7 +39,7 @@ class FtanParser extends RegexParsers {
         value => FtanString(("" /: value)(_ + _))
       }
     }
-    def quoted_string(quote: Char) = quote ~> stringcontent(quote) <~ quote
+    def quoted_string(quote: Char) = quote.toString ~> stringcontent(quote) <~ quote.toString
 
     (quoted_string('"') | quoted_string('\''))
   }
