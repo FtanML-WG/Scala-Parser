@@ -23,7 +23,10 @@ class BuilderTest extends ParserTest with FlatSpec {
     val afterParsing = parse(input)
     val builder = new ftanml.streams.Builder()
     afterParsing.send(builder)
-    println(builder.value.toFtanML)
+    if (afterParsing != builder.value) {
+      println("after parsing:    " + afterParsing)
+      println("after rebuilding: " + builder.value)
+    }
     afterParsing should_equal builder.value
   }
 
@@ -49,6 +52,7 @@ class BuilderTest extends ParserTest with FlatSpec {
   "Booleans" should "effectively round-trip" in {
     roundTrips("true")
     roundTrips("[false]")
+    roundTrips("<a=false>")
     roundTrips("<|<|<a=false>>>")
   }
 

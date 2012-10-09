@@ -57,7 +57,7 @@ class SerializerTest extends ParserTest with FlatSpec {
     serialize(parse("<a=true>")) should_equal "<a=true>"
     serialize(parse("<|abc>")) should_equal "<|abc>"
     serialize(parse("<|abc<i|d>efg>")) should_equal "<|abc<i|d>efg>"
-    serialize(parse("<|<><a><b|d>>")) should_equal "<<><a><b|d>>" // TODO: we've agreed this format, but it won't parse yet.
+    serialize(parse("<|<><a><b|d>>")) should_equal "<|<><a><b|d>>" // TODO: we've agreed this format, but it won't parse yet.
     serialize(parse("<a='1' b='2'>")) should_equal "<a=\"1\" b=\"2\">"
     serialize(parse("<a='x' b='y'>")) should_equal "<a=\"x\" b=\"y\">"
   }

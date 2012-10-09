@@ -1,19 +1,22 @@
 package ftanml.types
 
-import ftanml.objects.{FtanValue, FtanString, FtanElement}
+import ftanml.objects.{FtanString, FtanValue, FtanElement}
+
 
 /**
- * A NameType is a facet applied to elements, that constrains the name of the
- * element to have a particular type. If the type is nullable, then the element
- * name is optional, but if present it must conform to the type given. Common uses
- * are to constrain the name to a particular string (denoted by a FixedValueTest),
- * an enumeration of alternatives, or a regular expression.
+ * An AttNameType is a facet applied to elements, which constrains the name of the
+ * every attribute of the element to have a particular type. It can be used to
+ * define an enumeration of permitted attribute names (in which case the element's
+ * extensibility is suppressed), or in cases where elements are used as maps, for example
+ * from employee numbers to employee data, it can constrain the form of the keys in the map.
+ * It could also be used, for example, to restrict attribute names to conform to the XML rules.
  */
 
 class AttNameType(theType : FtanType) extends FtanType {
   def matches(value: FtanValue) = {
     value match {
-      case v: FtanElement => v(FtanElement.NAME_KEY).isInstance(theType)
+      case v: FtanElement => v.attributes.keys.forall {(name:FtanString) =>
+        name == FtanElement.NAME_KEY || name == FtanElement.CONTENT_KEY || name.isInstance(theType)}
       case _ => false
     }
   }

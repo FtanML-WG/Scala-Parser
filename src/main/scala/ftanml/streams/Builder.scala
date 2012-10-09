@@ -8,67 +8,59 @@ import collection.mutable.{HashMap, LinkedHashMap, LinkedList, Stack}
  */
 class Builder extends Acceptor {
 
-  private case class Info(var lastAtt : String, var map : LinkedHashMap[FtanString, FtanValue], var values : Seq[FtanValue])
-
-  private val stack = new Stack[Info]
+  private val stack = new Stack[AssistantBuilder]
+  stack.push(new ItemBuilder)
 
   def processString(value: String) {
-    add(FtanString(value))
+    stack.top.add(FtanString(value))
   }
 
   def processNumber(value: Double) {
-    add(FtanNumber(value))
+    stack.top.add(FtanNumber(value))
   }
 
   def processBoolean(value: Boolean) {
-    add(FtanBoolean(value))
+    stack.top.add(FtanBoolean(value))
   }
 
   def processNull() {
-    add(FtanNull)
+    stack.top.add(FtanNull)
   }
 
   def processStartArray() {
-    stack.push(Info(null, new LinkedHashMap[FtanString, FtanValue], new LinkedList[FtanValue]))
+    stack.push(new ArrayBuilder)
   }
 
   def processEndArray() {
-    val info = stack.pop();
-    val array = FtanArray(info.values)
-    add(array)
+    val arrayVal = stack.pop();
+    stack.top.add(arrayVal.getValue)
   }
 
   def processStartElement(name: Option[String]) {
-    stack.push(Info(null, new LinkedHashMap[FtanString, FtanValue], new LinkedList[FtanValue]))
+    stack.push(new ElementBuilder(name))
   }
 
   def processAttributeName(name: String) {
-    stack.top.lastAtt = name
+    stack.top.asInstanceOf[ElementBuilder].attribute(FtanString(name))
   }
 
   def processStartContent(isElementOnly: Boolean) {
-    processAttributeName(FtanElement.CONTENT_KEY.value)
+    stack.push(new ContentBuilder)
   }
 
   def processEndElement() {
-    val info = stack.pop()
-    val element = FtanElement(info.map)
-    add(element)
+    if (stack.top.isInstanceOf[ContentBuilder]) {
+      val content = stack.pop().getValue
+      stack.top.asInstanceOf[ElementBuilder].setContent(content.asInstanceOf[FtanArray])
+    }
+
+    val element = stack.pop().getValue
+    stack.top.add(element)
   }
 
   def error(err: Exception) {}
 
-  def add(value : FtanValue) {
-    if (stack.isEmpty) {
-      stack.push(Info(null, new LinkedHashMap[FtanString, FtanValue], new LinkedList[FtanValue]))
-      stack.top.values :+= value
-    } else {
-      stack.top.values :+= value
-      stack.top.map.put(FtanString(stack.top.lastAtt), value)
-    }
-  }
-
   def value : FtanValue =
-    stack.top.values(0)
+    stack.top.getValue
 
 }
