@@ -39,7 +39,7 @@ class FtanParser extends RegexParsers with DebugParser {
         value => FtanString(("" /: value)(_ + _))
       }
     }
-    def quoted_string(quote: Char) = quote ~> stringcontent(quote) <~ quote
+    def quoted_string(quote: Char) = quote.toString ~> stringcontent(quote) <~ quote.toString
 
     (quoted_string('"') | quoted_string('\''))
   }
