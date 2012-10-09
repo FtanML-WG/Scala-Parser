@@ -86,7 +86,7 @@ object TypeFactory {
           case FtanElement.NAME_KEY.value =>
             val str = value.asInstanceOf[FtanString].value
             namedTypes.get(str) match {
-              case Some(t) => t.asInstanceOf[FtanElement => FtanType](element)
+              case Some(t) => t(element)
               case _ => throw new InvalidTypeException("Unknown type name <" + str + ">")
             }
           case _ =>
@@ -99,7 +99,7 @@ object TypeFactory {
             }
             facets.get(name.value) match {
               case Some(t) => {
-                t.asInstanceOf[FtanValue => FtanType](value)
+                t(value)
               }
               case _ => AnyType  // ignore unrecognized facets
             }
