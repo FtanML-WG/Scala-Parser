@@ -1,7 +1,7 @@
 package ftanml.types
 
 import ftanml.objects._
-import ftanml.types.TypeFactory.InvalidTypeException
+import ftanml.util.Implicits._
 
 /**
  * The TypeFactory constructs types from FtanML elements that describe the type
@@ -25,6 +25,21 @@ object TypeFactory {
     "anyOf" -> ((e: FtanElement) => {new AnyOfType(contentTypes(e))}),
     "allOf" -> ((e: FtanElement) => {new AllOfType(contentTypes(e))})
   )
+  
+  val facets = collection.immutable.HashMap[String, (FtanType, FtanValue => FtanType)] (
+  	"attName" -> (ElementType, (v: FtanValue) => new AttNameType(makeType(v.asInstanceOf[FtanElement]))),
+    "fixed" -> (AnyType, (v: FtanValue) => new FixedValueType(v)),
+    "enum" -> (ArrayType, (v: FtanValue) => new EnumerationType(v.values)),
+    "itemType" -> (ElementType, (v: FtanValue) => new ItemType(makeType(v))),
+    "min" -> (NumberType, (v: FtanValue) => new MinValueType(v, false)),
+    "minExclusive"-> (NumberType, (v: FtanValue) => new MinValueType(v, true)),
+    "max"-> (NumberType, (v: FtanValue) => new MaxValueType(v, false)),
+    "maxExclusive"-> (NumberType, (v: FtanValue) => new MaxValueType(v, true)),
+    "name"-> (ElementType, (v: FtanValue) => new NameType(makeType(v.asInstanceOf[FtanElement]))),
+    //"nameMatches"-> (StringType, (v: FtanValue) => new NameType(v, true)),
+    "regex"-> (StringType, (v: FtanValue) => new RegexType(v)),
+    "size"-> (NumberType, (v: FtanValue) => new SizeType(v))
+  )
 
   def checkEmpty(e: FtanElement) {
     if (!e.isEmptyContent) {
@@ -37,7 +52,7 @@ object TypeFactory {
       throw new InvalidTypeException("Type descriptor <" + e.name + "> must have element-only content")
     }
     e.content.values.map({ t: FtanValue =>
-                makeType(t.asInstanceOf[FtanElement])
+                makeType(t)
               })
   }
 
@@ -60,7 +75,7 @@ object TypeFactory {
             if (!value.isInstanceOf[FtanElement]) {
               throw new InvalidTypeException("Invalid value for attribute " + name + " in element proforma: expected a type")
             }
-            new AttributeType(name, makeType(value.asInstanceOf[FtanElement]))
+            new AttributeType(name, makeType(value))
 
         }
       }
@@ -75,39 +90,6 @@ object TypeFactory {
     }
   }
 
-  val facets = collection.immutable.HashMap[String, FtanValue => FtanType] (
-    "attName" -> ((v: FtanValue) => new AttNameType(makeType(v.asInstanceOf[FtanElement]))),
-    "fixed" -> ((v: FtanValue) => new FixedValueType(v)),
-    "enum" -> ((v: FtanValue) => new EnumerationType(v.asInstanceOf[FtanArray].values)),
-    "itemType" -> ((v: FtanValue) => new ItemType(makeType(v.asInstanceOf[FtanElement]))),
-    "min" -> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], false)),
-    "minExclusive"-> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], true)),
-    "max"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], false)),
-    "maxExclusive"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], true)),
-    "name"-> ((v: FtanValue) => new NameType(makeType(v.asInstanceOf[FtanElement]))),
-    //"nameMatches"-> ((v: FtanValue) => new NameType(v.asInstanceOf[FtanString], true)),
-    "regex"-> ((v: FtanValue) => new RegexType(v.asInstanceOf[FtanString])),
-    "size"-> ((v: FtanValue) => new SizeType(v.asInstanceOf[FtanNumber]))
-  )
-
-  val facetTypes = collection.immutable.HashMap[String, FtanType] (
-    "attName" -> ElementType,
-    "fixed" -> AnyType,
-    "enum" -> ArrayType,
-    "itemType" -> ElementType,
-    "min" -> NumberType,
-    "minExclusive"-> NumberType,
-    "max"-> NumberType,
-    "maxExclusive"-> NumberType,
-    "name"-> ElementType,
-    //"nameMatches"-> StringType,
-    "regex"-> StringType,
-    "size"-> NumberType
-  )
-
-
-
-
   def makeType(element: FtanElement): FtanType = {
     val memberTypes = {
       for ((name, value) <- element.attributes) yield {
@@ -115,20 +97,16 @@ object TypeFactory {
           case FtanElement.NAME_KEY.value =>
             val str = value.asInstanceOf[FtanString].value
             namedTypes.get(str) match {
-              case Some(t) => t.asInstanceOf[FtanElement => FtanType](element)
+              case Some(t) => t(element)
               case _ => throw new InvalidTypeException("Unknown type name <" + str + ">")
             }
           case _ =>
-            facetTypes.get(name.value) match {
-              case Some(t) =>
-                if (!value.isInstance(t)) {
-                  throw new InvalidTypeException("Invalid value for " + name.value + " facet")
-                }
-              case _ =>
-            }
             facets.get(name.value) match {
-              case Some(t) => {
-                t.asInstanceOf[FtanValue => FtanType](value)
+              case Some((t: FtanType, f: (FtanValue => FtanType))) => {
+              	if(!value.isInstance(t)){
+              		throw new InvalidTypeException("Invalid value for " + name.value + " facet")
+              	}
+                f(value)
               }
               case _ => AnyType  // ignore unrecognized facets
             }

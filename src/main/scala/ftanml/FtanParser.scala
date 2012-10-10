@@ -12,6 +12,10 @@ import ftanml.objects.FtanElement
 import scala.collection.mutable.LinkedHashMap
 
 class FtanParser extends RegexParsers with DebugParser {
+
+  var _skipWhitespace = true
+  override def skipWhitespace = _skipWhitespace
+
   def _null: Parser[FtanNull.type] =
     "null" ^^^ (FtanNull)
 
@@ -34,7 +38,7 @@ class FtanParser extends RegexParsers with DebugParser {
     def stringcontent(usedQuote: Char): Parser[FtanString] = {
       def stringCharacter: Parser[Char] =
         ("[^\\" + usedQuote + "\b\f\n\r\t]").r ^^ { _.charAt(0) }
-      
+
       ((escapedCharacter | stringCharacter)*) ^^ {
         value => FtanString(("" /: value)(_ + _))
       }
@@ -50,7 +54,7 @@ class FtanParser extends RegexParsers with DebugParser {
     }
 
   def element: Parser[FtanElement] = {
-    def attributes: Parser[LinkedHashMap[FtanString, FtanValue]] = {
+    def attributes = new Parser[LinkedHashMap[FtanString, FtanValue]] {
       def nameWithoutQuotes: Parser[FtanString] =
         FtanElement.VALID_NAME ^^ {
           value => FtanString(value)
@@ -63,21 +67,35 @@ class FtanParser extends RegexParsers with DebugParser {
       def firstpair: Parser[(FtanString, FtanValue)] =
         (pair | name) ^^ {
           case name: FtanString => FtanElement.NAME_KEY -> name
-          case (key:FtanString,value:FtanValue) => (key,value)
+          case (key: FtanString, value: FtanValue) => (key, value)
         }
-      firstpair ~ (pair*) ^^ {
+      def parser = firstpair ~ (pair*) ^^ {
         case firstpair ~ tailpairs => new LinkedHashMap[FtanString, FtanValue]() += firstpair ++= tailpairs
       }
+      override def apply(in: Input) = {
+        val _skipWhitespaceStore = _skipWhitespace
+        _skipWhitespace = true
+        val result = parser(in)
+        _skipWhitespace = _skipWhitespaceStore
+        result
+      }
     }
-    def content: Parser[FtanArray] = {
+    def content = new Parser[FtanArray] {
       def contentstringCharacter: Parser[Char] =
         """[^\\<>]""".r ^^ { _.charAt(0) }
       def contentstring: Parser[FtanString] =
         ((escapedCharacter | contentstringCharacter)+) ^^ {
           value => FtanString(("" /: value)(_ + _))
         }
-      ((contentstring | element)*) ^^ {
+      def parser = ((contentstring | element)*) ^^ {
         value => FtanArray(value)
+      }
+      override def apply(in: Input) = {
+        val _skipWhitespaceStore = _skipWhitespace
+        _skipWhitespace = false
+        val result = parser(in)
+        _skipWhitespace = _skipWhitespaceStore
+        result
       }
     }
 
@@ -110,7 +128,7 @@ object MyApp extends App {
   val parser = new FtanParser
 
   for (line <- io.Source.stdin.getLines()) {
-    parser.value(new CharSequenceReader(line)) match {
+    parser.value(new CharSequenceReader(line + "\n>")) match {
       case parser.Success(result, rest) =>
         println(result.toFtanML)
       case parser.Failure(msg, rest) =>
