@@ -17,4 +17,6 @@ class NameType(theType : FtanType) extends FtanType {
       case _ => false
     }
   }
+
+  def descriptor = new FtanElement().setAttribute("name", theType.descriptor)
 }

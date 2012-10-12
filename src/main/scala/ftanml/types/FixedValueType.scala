@@ -1,6 +1,6 @@
 package ftanml.types
 
-import ftanml.objects.FtanValue
+import ftanml.objects.{FtanElement, FtanValue}
 
 
 /**
@@ -10,4 +10,6 @@ import ftanml.objects.FtanValue
 class FixedValueType(fixedValue : FtanValue) extends FtanType {
   
   def matches(value: FtanValue) = value == fixedValue
+
+  def descriptor = new FtanElement().setAttribute("fixed", fixedValue)
 }

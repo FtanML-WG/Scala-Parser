@@ -1,6 +1,7 @@
 package ftanml.types
 
-import ftanml.objects.{FtanValue, FtanString, FtanElement}
+import ftanml.objects.{FtanArray, FtanValue, FtanString, FtanElement}
+
 
 /**
  * An AttributeType is a facet applied to elements, that constrains the element
@@ -16,4 +17,6 @@ class AttributeType(name: FtanString, attType: FtanType) extends FtanType {
       case _ => false
     }
   }
+
+  def descriptor = new FtanElement("element").setContent(FtanArray(FtanElement().setAttribute(name.value, attType.descriptor)))
 }

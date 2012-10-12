@@ -1,6 +1,7 @@
 package ftanml.types
 
-import ftanml.objects.{FtanValue, FtanNumber, SizedObject}
+import ftanml.objects.{FtanElement, FtanValue, FtanNumber, SizedObject}
+
 
 class SizeType(size: FtanNumber) extends FtanType {
   def matches(value: FtanValue) = {
@@ -9,4 +10,6 @@ class SizeType(size: FtanNumber) extends FtanType {
       case _ => false
     }
   }
+
+  override def descriptor = FtanElement().setAttribute("size", size)
 }

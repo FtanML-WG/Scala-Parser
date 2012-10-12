@@ -1,6 +1,6 @@
 package ftanml.types
 
-import ftanml.objects.{FtanNumber, FtanValue}
+import ftanml.objects.{FtanElement, FtanNumber, FtanValue}
 
 
 /**
@@ -14,4 +14,6 @@ class MaxValueType(maxValue : FtanNumber, exclusive : Boolean) extends FtanType 
       case _ => false
     }
   }
+
+  def descriptor = new FtanElement().setAttribute((if (exclusive) "maxExclusive" else "max"), maxValue)
 }

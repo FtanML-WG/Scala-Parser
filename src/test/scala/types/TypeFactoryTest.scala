@@ -143,4 +143,30 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
     TestParser.parse("<eeee a=3 f=4 |content>") ==> theType("<element attName=<regex='[a-g]'>>")
     TestParser.parse("<eeee a=3 h=4 |content>") !=> theType("<element attName=<regex='[a-g]'>>")
   }
+
+  "ArrayGrammar" should "match array instances" in {
+    TestParser.parse("[1, 2, 3]") ==> theType("<array |<number><number><number>>")
+    TestParser.parse("[1, 2, 3]") ==> theType("<array|<many|<number>>>")
+    TestParser.parse("[]") ==> theType("<array|<many|<number>>>")
+    TestParser.parse("[]") ==> theType("<array|<optional|<number>>>")
+    TestParser.parse("[1]") ==> theType("<array|<optional|<number>>>")
+    TestParser.parse("[1,2]") !=> theType("<array|<optional|<number>>>")
+    TestParser.parse("['a',1,2]") ==> theType("<array|<string><many|<number>>>")
+    TestParser.parse("['a']") ==> theType("<array|<string><many|<number>>>")
+    TestParser.parse("['a',1,2,'b']") !=> theType("<array|<string><many|<number>>>")
+    TestParser.parse("[-2,-3,-4,2,3,4]") ==> theType("<array|<many|<maxExclusive=0>><many|<minExclusive=0>>>")
+    TestParser.parse("[-2,-3,-4,2,3,4,-1]") !=> theType("<array|<many|<maxExclusive=0>><many|<minExclusive=0>>>")
+    TestParser.parse("[-2,-3,-4,2,3,4,-1]") ==> theType("<array|<anyOf max=10|<maxExclusive=0><minExclusive=0>>>")
+    TestParser.parse("[-2,-3,-4,2,3,4,-1,0]") !=> theType("<array|<anyOf max=10|<maxExclusive=0><minExclusive=0>>>")
+    TestParser.parse("[-2,-3,-4,2,3,4,-1,8,-3,10,11]") !=> theType("<array|<anyOf max=10|<maxExclusive=0><minExclusive=0>>>")
+  }
+
+  "ElementGrammar" should "match element instances" in {
+    TestParser.parse("<e|<f><g><h>>") ==> theType("<element|<e|<element|<f>><element|<g>><element|<h>>>>")
+    TestParser.parse("<e|<f><g><i>>") !=> theType("<element|<e|<element|<f>><element|<g>><element|<h>>>>")
+    TestParser.parse("<e|<f><g><i>>") ==> theType("<element|<e|<element|<f>><element|<g>><anyOf|<element|<h>><element|<i>>>>>")
+    TestParser.parse("<e|<f><g><i><h>>") ==> theType("<element|<e|<element|<f>><element|<g>><anyOf max=2|<element|<h>><element|<i>>>>>")
+    TestParser.parse("<e|<f><g><i><h><i>>") !=> theType("<element|<e|<element|<f>><element|<g>><anyOf max=2|<element|<h>><element|<i>>>>>")
+  }
+
 }

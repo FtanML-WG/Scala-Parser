@@ -1,7 +1,6 @@
 package ftanml.types
 
-import ftanml.objects.FtanString
-import ftanml.objects.FtanValue
+import ftanml.objects.{FtanElement, FtanString, FtanValue}
 
 
 /**
@@ -21,6 +20,8 @@ class RegexType(pattern : FtanString) extends FtanType {
       case _ => false
     }
   }
+
+  override def descriptor = new FtanElement().setAttribute("regex", pattern)
 
 
 }

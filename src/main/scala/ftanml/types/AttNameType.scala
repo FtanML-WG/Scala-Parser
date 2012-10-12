@@ -20,4 +20,6 @@ class AttNameType(theType : FtanType) extends FtanType {
       case _ => false
     }
   }
+
+  def descriptor = FtanElement().setAttribute("attName", theType.descriptor)
 }

@@ -1,6 +1,7 @@
 package ftanml.types
 
-import ftanml.objects.FtanValue
+import ftanml.objects.{FtanArray, FtanElement, FtanValue}
+
 
 /**
  * A type that matches any one of a fixed set of permitted values
@@ -9,4 +10,6 @@ import ftanml.objects.FtanValue
 case class EnumerationType(values : Traversable[FtanValue]) extends FtanType {
   
   def matches(value: FtanValue) = values.exists(_==value)
+
+  def descriptor = new FtanElement().setAttribute("enum", FtanArray(List.concat(values)))
 }

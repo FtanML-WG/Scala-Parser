@@ -11,4 +11,6 @@ class ItemType(itemtype: FtanType) extends FtanType {
       case _ => false
     }
   }
+
+  def descriptor = new FtanElement().setAttribute("itemType", itemtype.descriptor)
 }

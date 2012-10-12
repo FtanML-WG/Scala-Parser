@@ -11,7 +11,15 @@ import ftanml.objects._
 
 trait AssistantBuilder {
 
+  /**
+   * Add a value to the composite value currently being assembled)
+   */
+
   def add(value : FtanValue)
+
+  /**
+   * On completion get the assembled composite value
+   */
 
   def getValue : FtanValue
 
@@ -57,7 +65,7 @@ class ContentBuilder extends ArrayBuilder {}
 
 class ElementBuilder(name : Option[String]) extends AssistantBuilder {
 
-  var map = new LinkedHashMap[FtanString, FtanValue]
+  val map = new LinkedHashMap[FtanString, FtanValue]
   var currentAtt : FtanString = FtanString("")
 
   name match {
