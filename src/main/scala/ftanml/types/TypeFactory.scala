@@ -30,7 +30,7 @@ object TypeFactory {
   )
   
   val facets = collection.immutable.HashMap[String, (FtanType, FtanValue => FtanType)] (
-  	"attName" -> (ElementType, (v: FtanValue) => new AttNameType(makeType(v.asInstanceOf[FtanElement]))),
+  	"attName" -> (ElementType, (v: FtanValue) => new AttNameType(makeType(v))),
     "fixed" -> (AnyType, (v: FtanValue) => new FixedValueType(v)),
     "enum" -> (ArrayType, (v: FtanValue) => new EnumerationType(v.values)),
     "itemType" -> (ElementType, (v: FtanValue) => new ItemType(makeType(v))),
@@ -38,7 +38,7 @@ object TypeFactory {
     "minExclusive"-> (NumberType, (v: FtanValue) => new MinValueType(v, true)),
     "max"-> (NumberType, (v: FtanValue) => new MaxValueType(v, false)),
     "maxExclusive"-> (NumberType, (v: FtanValue) => new MaxValueType(v, true)),
-    "name"-> (ElementType, (v: FtanValue) => new NameType(makeType(v.asInstanceOf[FtanElement]))),
+    "name"-> (ElementType, (v: FtanValue) => new NameType(makeType(v))),
     //"nameMatches"-> (StringType, (v: FtanValue) => new NameType(v, true)),
     "regex"-> (StringType, (v: FtanValue) => new RegexType(v)),
     "size"-> (NumberType, (v: FtanValue) => new SizeType(v))
@@ -135,37 +135,6 @@ object TypeFactory {
     })
 
   }
-
-//  val facets = collection.immutable.HashMap[String, FtanValue => FtanType] (
-//    "attName" -> ((v: FtanValue) => new AttNameType(makeType(v.asInstanceOf[FtanElement]))),
-//    "fixed" -> ((v: FtanValue) => new FixedValueType(v)),
-//    "enum" -> ((v: FtanValue) => new EnumerationType(v.asInstanceOf[FtanArray].values)),
-//    "itemType" -> ((v: FtanValue) => new ItemType(makeType(v.asInstanceOf[FtanElement]))),
-//    "min" -> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], false)),
-//    "minExclusive"-> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], true)),
-//    "max"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], false)),
-//    "maxExclusive"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], true)),
-//    "name"-> ((v: FtanValue) => new NameType(makeType(v.asInstanceOf[FtanElement]))),
-//    //"nameMatches"-> ((v: FtanValue) => new NameType(v.asInstanceOf[FtanString], true)),
-//    "regex"-> ((v: FtanValue) => new RegexType(v.asInstanceOf[FtanString])),
-//    "size"-> ((v: FtanValue) => new SizeType(v.asInstanceOf[FtanNumber]))
-//  )
-
-  val facetTypes = collection.immutable.HashMap[String, FtanType] (
-    "attName" -> ElementType,
-    "fixed" -> AnyType,
-    "enum" -> ArrayType,
-    "itemType" -> ElementType,
-    "min" -> NumberType,
-    "minExclusive"-> NumberType,
-    "max"-> NumberType,
-    "maxExclusive"-> NumberType,
-    "name"-> ElementType,
-    //"nameMatches"-> StringType,
-    "regex"-> StringType,
-    "size"-> NumberType
-  )
-
 
   def makeType(element: FtanElement): FtanType = {
     val memberTypes = {
