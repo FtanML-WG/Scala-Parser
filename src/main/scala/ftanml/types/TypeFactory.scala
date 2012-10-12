@@ -1,12 +1,10 @@
 package ftanml.types
 
 import ftanml.objects._
-<<<<<<< HEAD
 import ftanml.util.Implicits._
-=======
 import ftanml.types.TypeFactory.InvalidTypeException
 import ftanml.grammar._
->>>>>>> Add grammar machinery
+
 
 /**
  * The TypeFactory constructs types from FtanML elements that describe the type
@@ -95,8 +93,6 @@ object TypeFactory {
     }
   }
 
-<<<<<<< HEAD
-=======
   def arrayWithGrammar(content: FtanArray) : Grammar = {
     new SequenceParticle(1, 1, particles(content)).makeGrammar
   }
@@ -140,20 +136,20 @@ object TypeFactory {
 
   }
 
-  val facets = collection.immutable.HashMap[String, FtanValue => FtanType] (
-    "attName" -> ((v: FtanValue) => new AttNameType(makeType(v.asInstanceOf[FtanElement]))),
-    "fixed" -> ((v: FtanValue) => new FixedValueType(v)),
-    "enum" -> ((v: FtanValue) => new EnumerationType(v.asInstanceOf[FtanArray].values)),
-    "itemType" -> ((v: FtanValue) => new ItemType(makeType(v.asInstanceOf[FtanElement]))),
-    "min" -> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], false)),
-    "minExclusive"-> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], true)),
-    "max"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], false)),
-    "maxExclusive"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], true)),
-    "name"-> ((v: FtanValue) => new NameType(makeType(v.asInstanceOf[FtanElement]))),
-    //"nameMatches"-> ((v: FtanValue) => new NameType(v.asInstanceOf[FtanString], true)),
-    "regex"-> ((v: FtanValue) => new RegexType(v.asInstanceOf[FtanString])),
-    "size"-> ((v: FtanValue) => new SizeType(v.asInstanceOf[FtanNumber]))
-  )
+//  val facets = collection.immutable.HashMap[String, FtanValue => FtanType] (
+//    "attName" -> ((v: FtanValue) => new AttNameType(makeType(v.asInstanceOf[FtanElement]))),
+//    "fixed" -> ((v: FtanValue) => new FixedValueType(v)),
+//    "enum" -> ((v: FtanValue) => new EnumerationType(v.asInstanceOf[FtanArray].values)),
+//    "itemType" -> ((v: FtanValue) => new ItemType(makeType(v.asInstanceOf[FtanElement]))),
+//    "min" -> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], false)),
+//    "minExclusive"-> ((v: FtanValue) => new MinValueType(v.asInstanceOf[FtanNumber], true)),
+//    "max"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], false)),
+//    "maxExclusive"-> ((v: FtanValue) => new MaxValueType(v.asInstanceOf[FtanNumber], true)),
+//    "name"-> ((v: FtanValue) => new NameType(makeType(v.asInstanceOf[FtanElement]))),
+//    //"nameMatches"-> ((v: FtanValue) => new NameType(v.asInstanceOf[FtanString], true)),
+//    "regex"-> ((v: FtanValue) => new RegexType(v.asInstanceOf[FtanString])),
+//    "size"-> ((v: FtanValue) => new SizeType(v.asInstanceOf[FtanNumber]))
+//  )
 
   val facetTypes = collection.immutable.HashMap[String, FtanType] (
     "attName" -> ElementType,
@@ -171,9 +167,6 @@ object TypeFactory {
   )
 
 
-
-
->>>>>>> Add grammar machinery
   def makeType(element: FtanElement): FtanType = {
     val memberTypes = {
       for ((name, value) <- element.attributes) yield {
