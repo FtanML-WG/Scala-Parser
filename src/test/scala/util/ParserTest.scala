@@ -8,8 +8,7 @@ import ftanml.FtanParser
 import ftanml.objects.FtanValue
 
 /**
- * Inheriting from this class allows a very easy way import objects.TestHelper
-to write test cases.
+ * Inheriting from this class allows a very easy way to write test cases.
  * 
  * You can just write test cases the following way:
  * 
@@ -95,7 +94,7 @@ trait ParserTest extends TestHelper {
       str <--> value
       str
     }
-    def <--(inputs: String*) = {
+    def <--(inputs: String*) {
       for(input <- inputs)
         input --> value
     }

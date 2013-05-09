@@ -1,7 +1,6 @@
 package ftanml.types
 
 import ftanml.objects.{FtanArray, FtanElement, FtanValue}
-import collection.mutable.LinkedList
 
 
 /**

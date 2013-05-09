@@ -65,15 +65,11 @@ class ContentBuilder extends ArrayBuilder {}
 
 class ElementBuilder(name : Option[String]) extends AssistantBuilder {
 
-  val map = new LinkedHashMap[FtanString, FtanValue]
-  var currentAtt : FtanString = FtanString("")
+  val map = new LinkedHashMap[String, FtanValue]
+  var currentAtt : String = ""
 
-  name match {
-    case Some(s) => map.put(FtanElement.NAME_KEY, FtanString(s))
-    case None =>
-  }
 
-  def attribute(name : FtanString) {
+  def attribute(name : String) {
     currentAtt = name
   }
 
@@ -85,7 +81,7 @@ class ElementBuilder(name : Option[String]) extends AssistantBuilder {
     map.put(currentAtt, value)
   }
 
-  def getValue = FtanElement(map)
+  def getValue = FtanElement(map.toMap)
 }
 
 

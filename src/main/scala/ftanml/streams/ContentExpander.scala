@@ -17,16 +17,16 @@ class ContentExpander(out : Acceptor) extends Filter(out) {
   override def processStartElement(name: Option[String]) {
     out.processStartElement(None)
     elementStack.push(false)
-    name map { name=>
-        out.processAttributeName(FtanElement.NAME_KEY.value)
-        out.processString(name)
-    }
+//    name map { name=>
+//        out.processAttributeName(FtanElement.NAME_KEY.value)
+//        out.processString(name)
+//    }
   }
 
   override def processStartContent(isElementOnly: Boolean) {
     elementStack.pop()
     elementStack.push(true)
-    out.processAttributeName(FtanElement.CONTENT_KEY.value)
+    out.processAttributeName(FtanElement.CONTENT_KEY)
     out.processStartArray()
   }
 

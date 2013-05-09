@@ -1,101 +1,98 @@
 package ftanml.objects
 
-import scala.collection.mutable.LinkedHashMap
 import ftanml.streams.Acceptor
 
-object FtanElement extends FtanElement(new LinkedHashMap[FtanString,FtanValue]) {
-  val NAME_KEY = new FtanString("$name")
-  val CONTENT_KEY = new FtanString("$content")
-  
+object FtanElement extends FtanElement(Map[String,  FtanValue]()) {
+
+  val CONTENT_KEY = ""
+
   val VALID_NAME = "[\\p{Alpha}\\p{Digit}_:\\$]+".r
-  
-  def apply(attributes: (FtanString,FtanValue)*) = new FtanElement(attributes.toMap)
+
+  def apply() = new FtanElement()
+
+  override def apply(name: String) = new FtanElement(name)
+
+  def apply(attributes: (String,FtanValue)*) = new FtanElement(attributes.toMap.filter(_._2 != FtanNull))
+
+  def apply(attributes: Map[String,  FtanValue]) = new FtanElement(attributes.filter(_._2 != FtanNull))
+
+  def apply(name: String, attributes: (String,FtanValue)*) = new FtanElement(attributes.toMap.filter(_._2 != FtanNull)).setName(name)
+
+  def apply(name: String, attributes: Map[String,  FtanValue]) = new FtanElement(name, attributes.filter(_._2 != FtanNull))
 }
 
-case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends FtanValue with SizedObject {
+/**
+ * If the default constructor is used, the attribute map must not include any attributes whose value is FtanNull.
+ */
+
+case class FtanElement(name: Option[String],  attributes: Map[String, FtanValue]) extends FtanValue with SizedObject with TextComponent {
   import FtanElement._
+
+  if (attributes.values.exists {x => x == FtanNull}) throw new IllegalArgumentException("Element cannot contain attribute with null value");
 
   /**
    * Create an element with no name, no attributes, and no content
    */
-  def this() = this(new LinkedHashMap[FtanString, FtanValue])
+  def this() = this(None, Map[String, FtanValue]())
 
   /**
    * Create an element with a specified name, with no attributes and no content
    */
 
-  def this(name: String) = this(new LinkedHashMap[FtanString, FtanValue] += (FtanString("$name") -> FtanString(name)))
-  // TODO: the above should use NAME_KEY, but the compiler doesn't like it
+  def this(name: String) = this(Some(name), Map[String, FtanValue]())
 
   /**
-   * Create an element with attributes supplied in the form of a map
+   * Create an element with no name, and with attributes supplied in the form of a map
    */
 
-  def this(attributes: Map[FtanString,FtanValue]) = this(new LinkedHashMap++=attributes)
+  def this(attributes: Map[String,FtanValue]) = this(None, attributes)
 
+  /**
+   * Create an element with a name, and with attributes supplied in the form of a map
+   */
+
+  def this(name: String, attributes: Map[String,FtanValue]) = this(Some(name), attributes)
 
   /**
    * Create a new element as a copy of an existing element with a specified name
    */
 
-  def setName(name: String) = setAttribute(NAME_KEY.value, FtanString(name))
+  def setName(name: String) = new FtanElement(Some(name), this.attributes)
 
   /**
    * Create a new element as a copy of an existing element with an additional or replaced attribute
    */
 
   def setAttribute(name: String, value: FtanValue) = {
-    new FtanElement(attributes += (FtanString(name) -> value))
+    if (value == FtanNull) this else new FtanElement(this.name, attributes + (name -> value))
   }
+
+  /**
+   * Create a new element as a copy of an existing element with an additional or replaced attributes
+   */
+
+  def setAttributes(attributes: Map[String,  FtanValue]) = new FtanElement(this.name, this.attributes ++ attributes.filter(_._2 != FtanNull))
 
   /**
    * Create a new element as a copy of an existing element with specified content
    */
 
-  def setContent(value: FtanValue) = setAttribute(CONTENT_KEY.value, value)
+  def setContent(value: FtanValue) = setAttribute(CONTENT_KEY, value)
 
   /**
    * Get a named attribute of the element (allows the form element("attname"))
    */
 
-  def apply(attName: FtanString) : FtanValue = attributes.getOrElse(attName, FtanNull)
-
-  /**
-   * Get the name of the element. Returns None for an unnamed element
-   */
-
-  def name: Option[String] =
-     attributes.get(NAME_KEY) map { _.asInstanceOf[FtanString].value }
+  def apply(attName: String) : FtanValue = attributes.getOrElse(attName, FtanNull)
 
   /**
    * Get the content of the element
    */
 
-  def content: FtanArray = attributes.get(CONTENT_KEY) map {_.asInstanceOf[FtanArray]} getOrElse FtanArray(Nil)
+  def content: FtanValue = apply(CONTENT_KEY)
 
-  /**
-   * Ask if the content of the element is empty
-   */
+  def isNullContent: Boolean = content == FtanNull
 
-  def isEmptyContent: Boolean = content.values.isEmpty
-
-  /**
-   * Ask if the content of the element is a single string
-   */
-
-  def isSimpleContent: Boolean = content.values.size == 1 && content.values(0).isInstanceOf[FtanString]
-
-  /**
-   * Ask if the content of the element contains child elements only
-   */
-
-  def isElementOnlyContent: Boolean = !content.values.exists(!_.isInstanceOf[FtanElement])
-
-  /**
-   * Ask if the content of the element contains mixed content (at least one element and at least one string)
-   */
-
-  def isMixedContent: Boolean = content.values.exists(_.isInstanceOf[FtanElement]) && content.values.exists(_.isInstanceOf[FtanString])
 
   /**
    * Send the element to an Acceptor
@@ -103,28 +100,27 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
 
   override def send(acceptor: Acceptor) {
     acceptor.processStartElement(name)
-    for ((key, value) <- attributes) value match {
-      //Ignore name attribute, if valid
-      case string: FtanString if key == NAME_KEY =>
-      //Ignore content attribute, if valid
-      case array: FtanArray if key == CONTENT_KEY && array.isValidElementContent =>
-      //Write all other attributes
-      case value: FtanValue =>
-        acceptor.processAttributeName(key.value)
+    for ((key, value) <- attributes) {
+      if (key != CONTENT_KEY && value != FtanNull) {
+        acceptor.processAttributeName(key)
         value.send(acceptor)
+      }
     }
-    if (!isEmptyContent) {
-      acceptor.processStartContent(isElementOnlyContent)
-      content.values.foreach {_.send(acceptor)}
+    if (content != FtanNull) {
+      acceptor.processAttributeName(CONTENT_KEY)
+      content.send(acceptor)
     }
     acceptor.processEndElement()
   }
 
-  override def equals(that: Any) =
+  override def equals(that: Any) = {
+//    Console.println("name OK? " + (name == that.asInstanceOf[FtanElement].name) +
+//      "attsize OK? " + (attributes.size == that.asInstanceOf[FtanElement].attributes.size) +
+//      "attVal OK? " + attributes.equals(that.asInstanceOf[FtanElement].attributes) )
     that.isInstanceOf[FtanElement] &&
-      attributes.size == that.asInstanceOf[FtanElement].attributes.size &&
+      name == that.asInstanceOf[FtanElement].name &&
       attributes.equals(that.asInstanceOf[FtanElement].attributes)
-
+}
 
   override def hashCode() : Int = {
     attributes.hashCode()
@@ -138,8 +134,8 @@ case class FtanElement(attributes: LinkedHashMap[FtanString, FtanValue]) extends
   	var size = attributes.size
   	
   	//don't want to count name and content as attributes
-  	if(attributes.contains(NAME_KEY))
-  		size -= 1
+  	//if(attributes.contains(NAME_KEY))
+  	//	size -= 1
   	if(attributes.contains(CONTENT_KEY))
   		size -= 1
 

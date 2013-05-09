@@ -4,21 +4,19 @@ import java.io.Writer
 import java.lang.IllegalStateException
 import ftanml.streams.Acceptor
 import ftanml.util.Unicode
+import scala.util.matching.Regex
 
 object FtanString extends FtanString("") {
 
   /**
-   * Process an escape sequence. Returns an String, since the character may be
-   * a non-BMP Unicode character
+   * Process a string containing escape sequences. Return the string with the escape
+   * sequences expanded.
    */
-  def deescapeChar(input: String): String = {
-    if (input.length == 0)
-      // TODO Correct exception class
-      throw new IllegalStateException("Empty char can't be deescaped")
-    else if (input.charAt(0) == '\\') {
-      // Parse default escape sequences
-      if (input.length() == 2)
-        (input.charAt(1)) match {
+  def unescapeString(input: String): String = {
+    val r = """\\[bfnrt<>"'\\]|\\x([a-fA-F0-9]+);|\\\[(.)(.*?)\2\]""".r
+    r.replaceAllIn(input, m =>
+      Regex.quoteReplacement(
+        m.matched.charAt(1) match {
           case '"' => "\""
           case '\'' => "\'"
           case '\\' => "\\"
@@ -30,37 +28,16 @@ object FtanString extends FtanString("") {
           case 't' => "\t"
           case '<' => "<"
           case '>' => ">"
-          case _ =>
-            // TODO Correct exception class
-            throw new IllegalStateException("Unknown escape sequence "
-              + input)
-        }
-      else if (input.length == 6 && input.charAt(1) == 'u')
-        // Parse unicode escape sequence : \ followed by uHHHH
-        Integer.parseInt(input.substring(2, 6), 16).asInstanceOf[Char].toString
-      else if (input.charAt(1) == 'x') {
-        // Parse unicode escape sequence : \xH+;
-        Unicode.surrogatePair(Integer.parseInt(input.substring(2, input.length()-1), 16))
-      } else if (input.charAt(1) == '[') {
-        // 'CDATA' section \[*....*] where * is any character
-        input.substring(3, input.length()-2)
-      } else
-        // TODO Correct exception class
-        throw new IllegalStateException("Unknown escape sequence "
-          + input)
-    } else if (input.length() == 1)
-      // This isn't an escape sequence, pass the character through
-      ""+input.charAt(0)
-    else
-      // TODO Correct exception class
-      throw new IllegalStateException(
-        "Multi-Character token found, but isn't an escape sequence")
+          case 'x' => Unicode.surrogatePair(Integer.parseInt(m.group(1), 16))
+          case '[' => m.group(3)
+          case _ => ""
+      }))
   }
 
 
 }
 
-case class FtanString(value: String) extends FtanValue with SizedObject {
+case class FtanString(value: String) extends FtanValue with SizedObject with TextComponent {
 
   private def escapedValue(usedQuote: Char): String = {
     def escapeChar(input: Char): String = input match {

@@ -36,12 +36,16 @@ class Builder extends Acceptor {
     stack.top.add(arrayVal.getValue)
   }
 
+  def processStartText() {}
+
+  def processEndText() {}
+
   def processStartElement(name: Option[String]) {
     stack.push(new ElementBuilder(name))
   }
 
   def processAttributeName(name: String) {
-    stack.top.asInstanceOf[ElementBuilder].attribute(FtanString(name))
+    stack.top.asInstanceOf[ElementBuilder].attribute(name)
   }
 
   def processStartContent(isElementOnly: Boolean) {

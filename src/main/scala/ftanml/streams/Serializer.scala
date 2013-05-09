@@ -121,6 +121,18 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
     postValue()
   }
 
+  def processStartText() {
+    preValue()
+    writer.append("'")
+    stack.push(inContent)
+  }
+
+  def processEndText() {
+    stack.pop()
+    writer.append("'")
+    postValue()
+  }
+
   def processStartElement(name: Option[String]) {
     preValue()
     writer.append(startElement)
@@ -136,8 +148,10 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
       writer.append(attSeparator);
     }
     stack.push(middleOfElement)
-    writeName(name)
-    writer.append(attPunctuation);
+    if (!name.isEmpty) {
+      writeName(name)
+      writer.append(attPunctuation);
+    }
   }
 
   def processStartContent(isElementOnly: Boolean) {
@@ -178,6 +192,6 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
     if (isValidName(name))
       writer.append(name)
     else
-      formatString(name)
+      writer.append("`" + escapedValue(name, '`') + "`");
   }
 }

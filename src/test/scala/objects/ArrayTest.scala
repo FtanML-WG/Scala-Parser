@@ -1,12 +1,8 @@
 package objects
 
 import org.scalatest.FlatSpec
-import ftanml.objects.FtanNull
-import ftanml.objects.FtanArray
-import ftanml.objects.FtanString
-import ftanml.objects.FtanNumber
-import ftanml.objects.FtanBoolean
 import util.ParserTest
+import ftanml.objects._
 
 class ArrayTest extends ParserTest with FlatSpec {
 
@@ -26,30 +22,39 @@ class ArrayTest extends ParserTest with FlatSpec {
     FtanArray(FtanArray(FtanArray()), FtanArray()) should_not_equal FtanArray(FtanArray(), FtanArray(FtanArray()))
   }
 
-  they should "be parsed correctly" in {
+  "Arrays2" should "be parsed correctly" in {
     "[]" <--> FtanArray()
     "[\"bla\"]" <--> FtanArray(FtanString("bla"))
     "[2.34]" <--> FtanArray(FtanNumber(2.34))
     "[2.34,23.4]" <-- FtanArray(FtanNumber(2.34), FtanNumber(23.4)) <-- "[2.34,2.34e1]"
     "[1.23,'bl\"a',false,null,[1,null]]" <--
-      FtanArray(FtanNumber(1.23), FtanString("bl\"a"), FtanBoolean(false), FtanNull, FtanArray(FtanNumber(1), FtanNull)) <-- (
-        "[1.23,'bl\"a',false,null,[1.0,null]]",
-        "[12.3e-1,\"bl\\\"a\",false,null,[1e+0,null]]")
+      FtanArray(FtanNumber(1.23), FtanText(FtanString("bl\"a")), FtanBoolean(false), FtanNull, FtanArray(FtanNumber(1), FtanNull)) <-- (
+        "[1.23,'bl\"a',false,null,[1.0,null]]")
     "[[[1.2]]]" <--> FtanArray(FtanArray(FtanArray(FtanNumber(1.2))))
     "[[[]],[]]" <-- FtanArray(FtanArray(FtanArray()), FtanArray()) <-- (
       "[[[]],[]]", " [ [ [ ] ] , [ ] ] ")
     "[null,[0.1,[\"0.2\"],true],false,[0.5],0.6]" <--
       FtanArray(FtanNull, FtanArray(FtanNumber(0.1), FtanArray(FtanString("0.2")), FtanBoolean(true)), FtanBoolean(false), FtanArray(FtanNumber(0.5)), FtanNumber(0.6)) <--
-      ("[null,[0.1,[\"0.2\"],true],false,[0.5],0.6]", "[null, [1e-1 ,['0.2' ] ,true],false,[0.05e1],0.06E+1]")
+      ("[null,[0.1,[\"0.2\"],true],false,[0.5],0.6]", "[null, [1e-1 ,[\"0.2\" ] ,true],false,[0.05e1],0.06E+1]")
   }
 
-  they should "have a default value when used directly" in {
+  "Arrays3" should "have a default value when used directly" in {
     FtanArray should_equal FtanArray()
     FtanArray() should_equal FtanArray(Seq())
   }
 
-  they should "be rejected, if wrong" in {
-    //TODO
+  "Arrays4" should "compare correctly, when parsed" in {
+    TestParser.parsing("[1,2,3]") should_equal TestParser.parsing("[ 1 2 3 ]")
+    TestParser.parsing("[1,]") should_equal TestParser.parsing("[ 1, null ]")
+    TestParser.parsing("[,1]") should_equal TestParser.parsing("[ null, 1 ]")
+    TestParser.parsing("[,,]") should_equal TestParser.parsing("[ null null null ]")
+    TestParser.parsing("[<e><f>]") should_equal TestParser.parsing("[ < e >, < f > ]")
+    TestParser.parsing("[]") should_not_equal TestParser.parsing("[ null ]")
+  }
+
+  "Arrays9" should "be rejected, if wrong" in {
+    "[" invalid;
+    "[]]" invalid;
   }
 
 }

@@ -19,8 +19,8 @@ object TypeFactory {
     "string" -> ((e: FtanElement) => {checkEmpty(e); StringType}),
     "number" -> ((e: FtanElement) => {checkEmpty(e); NumberType}),
     "boolean" -> ((e: FtanElement) => {checkEmpty(e); BooleanType}),
-    "array" -> ((e: FtanElement) => {if (e.isEmptyContent) ArrayType else arrayWithGrammar(e.content)}),
-    "element" -> ((e: FtanElement) => {if (e.isEmptyContent) ElementType else elementProforma(singletonChildElement(e))}),
+    "array" -> ((e: FtanElement) => {if (e.isNullContent) ArrayType else arrayWithGrammar(e.content)}),
+    "element" -> ((e: FtanElement) => {if (e.isNullContent) ElementType else elementProforma(singletonChildElement(e))}),
     "any" -> ((e: FtanElement) => {checkEmpty(e); AnyType}),
     "nothing" -> ((e: FtanElement) => {checkEmpty(e); NothingType}),
     "nullable" -> ((e: FtanElement) => {new AnyOfType(List(NullType, makeType(singletonChildElement(e))))}),
@@ -45,33 +45,38 @@ object TypeFactory {
   )
 
   def checkEmpty(e: FtanElement) {
-    if (!e.isEmptyContent) {
+    if (!e.isNullContent) {
       throw new InvalidTypeException("Type descriptor <" + e.name + "> must be empty")
     }
   }
 
   def contentTypes(e: FtanElement) : Traversable[FtanType] = {
-    if (!e.isElementOnlyContent) {
-      throw new InvalidTypeException("Type descriptor <" + e.name + "> must have element-only content")
-    }
-    e.content.values.map({ t: FtanValue =>
+    e.content match {
+      case c: FtanElement =>
+        c.values.map({ t: FtanValue =>
                 makeType(t)
               })
+      case _ =>
+        throw new InvalidTypeException("Type descriptor <" + e.name + "> must have element-only content")
+    }
+
   }
 
   def singletonChildElement(e: FtanElement) : FtanElement = {
-    if (!(e.isElementOnlyContent && e.content.size == 1)) {
-      throw new InvalidTypeException("Type descriptor <" + e.name + "> must have a single element as its content")
+    e.content match {
+       case c: FtanElement => c
+       case _ => throw new InvalidTypeException("Type descriptor <" + e.name + "> must have a single element as its content")
     }
-    (e.content(0).asInstanceOf[FtanElement])
   }
 
   def elementProforma(element: FtanElement) : FtanType = {
     val memberTypes : Traversable[FtanType] = {
+      element.name match {
+        case Some(n) => {new NameType(new FixedValueType(FtanString(n)))}
+        case None =>
+      }
       for ((name, value) <- element.attributes) yield {
         name match {
-          case FtanElement.NAME_KEY =>
-            new NameType(new FixedValueType(value))
           case FtanElement.CONTENT_KEY =>
             new ContentGrammar(arrayWithGrammar(value.asInstanceOf[FtanArray]))
           case _ =>
@@ -103,11 +108,11 @@ object TypeFactory {
         case e: FtanElement => {
           e.name match {
             case Some("seq") =>
-              val min = e(FtanString("min")) match {
+              val min = e("min") match {
                 case n : FtanNumber => n.value.asInstanceOf[Int]
                 case _ => 1
               }
-              val max = e(FtanString("max")) match {
+              val max = e("max") match {
                 case n : FtanNumber => n.value.asInstanceOf[Int]
                 case _ => 1
               }
@@ -117,11 +122,11 @@ object TypeFactory {
             case Some("optional") =>
               new SequenceParticle(0, 1, particles(e.content))
             case Some("anyOf") =>
-              val min = e(FtanString("min")) match {
+              val min = e("min") match {
                 case n: FtanNumber => n.value.asInstanceOf[Int]
                 case _ => 1
               }
-              val max = e(FtanString("max")) match {
+              val max = e("max") match {
                 case n: FtanNumber => n.value.asInstanceOf[Int]
                 case _ => 1
               }
@@ -139,18 +144,18 @@ object TypeFactory {
   def makeType(element: FtanElement): FtanType = {
     val memberTypes = {
       for ((name, value) <- element.attributes) yield {
-        name.value match {
-          case FtanElement.NAME_KEY.value =>
-            val str = value.asInstanceOf[FtanString].value
-            namedTypes.get(str) match {
-              case Some(t) => t(element)
-              case _ => throw new InvalidTypeException("Unknown type name <" + str + ">")
-            }
+        name match {
+//          case FtanElement.NAME_KEY.value =>
+//            val str = value.asInstanceOf[FtanString].value
+//            namedTypes.get(str) match {
+//              case Some(t) => t(element)
+//              case _ => throw new InvalidTypeException("Unknown type name <" + str + ">")
+//            }
           case _ =>
-            facets.get(name.value) match {
+            facets.get(name) match {
               case Some((t: FtanType, f: (FtanValue => FtanType))) => {
               	if(!value.isInstance(t)){
-              		throw new InvalidTypeException("Invalid value for " + name.value + " facet")
+              		throw new InvalidTypeException("Invalid value for " + name + " facet")
               	}
                 f(value)
               }

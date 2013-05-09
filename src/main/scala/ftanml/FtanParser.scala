@@ -1,20 +1,12 @@
 package ftanml
 
+import objects._
 import scala.util.parsing.combinator.RegexParsers
-import ftanml.objects.FtanNull
-import ftanml.objects.FtanBoolean
-import ftanml.objects.FtanNumber
-import ftanml.objects.FtanValue
 import scala.util.parsing.input.CharSequenceReader
-import ftanml.objects.FtanArray
-import ftanml.objects.FtanString
-import ftanml.objects.FtanElement
-import scala.collection.mutable.LinkedHashMap
 
 class FtanParser extends RegexParsers with DebugParser {
 
-  var _skipWhitespace = true
-  override def skipWhitespace = _skipWhitespace
+  override val skipWhitespace = false
 
   def _null: Parser[FtanNull.type] =
     "null" ^^^ (FtanNull)
@@ -31,84 +23,131 @@ class FtanParser extends RegexParsers with DebugParser {
 
   private def escapedCharacter: Parser[String] =
     "\\" ~> """[bfnrt<>"'\\/]|u[a-fA-F0-9]{4}|x[a-fA-F0-9]+;|\[(.).*?\1\]""".r ^^ {
-      value => FtanString.deescapeChar("\\" + value)
+      value => FtanString.unescapeString("\\" + value)
     }
 
-  def string: Parser[FtanString] = {
-    def stringcontent(usedQuote: Char): Parser[FtanString] = {
-      def stringCharacter: Parser[Char] =
-        ("[^\\" + usedQuote + "\b\f\n\r\t]").r ^^ { _.charAt(0) }
+//  def array: Parser[FtanArray] =
+//    s ~> "[" ~> s ~> (repsep((s ~> value <~ s), ",")) <~ "]" <~ s ^^ {
+//      value => FtanArray(value)
+//    }
 
-      ((escapedCharacter | stringCharacter)*) ^^ {
-        value => FtanString(("" /: value)(_ + _))
+  def array: Parser[FtanArray] = {
+
+    s ~> "[" ~> ( rep(s ~> (value | ",")) <~ s) <~ ("]" ~ s) ^^ {
+      case Nil => FtanArray()
+      case seq => {
+        FtanArray(
+          (","+:seq, seq:+",").zipped.flatMap((X, Y) =>
+            (X, Y) match {
+              case (",", ",") => Seq(FtanNull)
+              case (",", _) => Nil
+              case (v, _) => Seq(v)
+            }).asInstanceOf[Seq[FtanValue]]
+        )
       }
     }
-    def quoted_string(quote: Char) = quote.toString ~> stringcontent(quote) <~ quote.toString
-
-    (quoted_string('"') | quoted_string('\''))
   }
 
-  def array: Parser[FtanArray] =
-    "[" ~> (repsep(value, ",")) <~ "]" ^^ {
-      value => FtanArray(value)
-    }
+  def escapeRegex(disallowed: String) =
+    ("""(?:[^\\""" + disallowed + """]|\\[bfnrt<>\"'\\]|\\x[a-fA-F0-9]+;|\\\[(.).*?\1\])*""").r
 
-  def element: Parser[FtanElement] = {
-    def attributes = new Parser[LinkedHashMap[FtanString, FtanValue]] {
-      def nameWithoutQuotes: Parser[FtanString] =
-        FtanElement.VALID_NAME ^^ {
-          value => FtanString(value)
+  def s: Parser[Option[String]] = {
+     "[ \n\r\t]*".r  ^^ {
+      case s => None
+    }
+  }
+
+  def string: Parser[FtanString] = {
+     "\"" ~> escapeRegex("\"") <~ "\""  ^^ {
+      case s => FtanString(FtanString.unescapeString(s))
+    }
+  }
+
+  def backTickName: Parser[String] = {
+    "`" ~> escapeRegex("`") <~ "`"  ^^ {
+      case s => FtanString.unescapeString(s)
+    }
+  }
+
+  def name: Parser[String] = FtanElement.VALID_NAME | backTickName
+
+  def element : Parser[FtanElement] = {
+
+    def firstAtt: Parser[Option[FtanValue]] =
+        opt("=" ~> value)
+
+    def initial: Parser[FtanElement] =
+        (s ~> name) ~ (s ~> firstAtt) ^^ {
+          case name ~ firstAtt =>
+            firstAtt match {
+              case Some(v) =>
+                FtanElement(name -> v)
+              case None =>
+                FtanElement(name)
+            }
         }
-      def name: Parser[FtanString] = nameWithoutQuotes | string
-      def pair: Parser[(FtanString, FtanValue)] =
-        name ~ "=" ~ value ^^ {
+
+    def pair: Parser[(String, FtanValue)] =
+        (s ~> name) ~ (s ~> "=" <~ s) ~ value ^^ {
           case name ~ sep ~ value => (name, value)
         }
-      def firstpair: Parser[(FtanString, FtanValue)] =
-        (pair | name) ^^ {
-          case name: FtanString => FtanElement.NAME_KEY -> name
-          case (key: FtanString, value: FtanValue) => (key, value)
-        }
-      def parser = firstpair ~ (pair*) ^^ {
-        case firstpair ~ tailpairs => new LinkedHashMap[FtanString, FtanValue]() += firstpair ++= tailpairs
-      }
-      override def apply(in: Input) = {
-        val _skipWhitespaceStore = _skipWhitespace
-        _skipWhitespace = true
-        val result = parser(in)
-        _skipWhitespace = _skipWhitespaceStore
-        result
-      }
+
+    def attributes: Parser[Map[String, FtanValue]] = rep(pair) ^^ {
+      case p => Map() ++ p
     }
-    def content = new Parser[FtanArray] {
+
+    "<" ~> (s ~> opt(initial)) ~ (s ~> attributes) ~ (s ~> opt(value)) <~ s <~ ">" ^^ {
+      case initial ~ attributes ~ content =>
+        initial match {
+          case Some(e) =>
+            content match {
+              case Some(v) => e.setAttributes(attributes.toMap).setContent(v)
+              case none => e.setAttributes(attributes)
+            }
+          case None =>
+            content match {
+              case Some(v) => FtanElement(attributes.toMap).setContent(v)
+              case none => FtanElement(attributes)
+            }
+
+        }
+
+    }
+
+  }
+
+  def text : Parser[FtanText] = {
+
       def contentstringCharacter: Parser[Char] =
-        """[^\\<>]""".r ^^ { _.charAt(0) }
+        "[^\\<>']".r ^^ { _.charAt(0) }
+
       def contentstring: Parser[FtanString] =
         ((escapedCharacter | contentstringCharacter)+) ^^ {
           value => FtanString(("" /: value)(_ + _))
         }
-      def parser = ((contentstring | element)*) ^^ {
-        value => FtanArray(value)
+
+      "'" ~> ((contentstring | element)*) <~ "'" ^^ {
+        value => FtanText(value)
       }
-      override def apply(in: Input) = {
-        val _skipWhitespaceStore = _skipWhitespace
-        _skipWhitespace = false
-        val result = parser(in)
-        _skipWhitespace = _skipWhitespaceStore
-        result
-      }
+
     }
 
-    "<" ~> (attributes?) ~ (("|" ~> content)?) <~ ">" ^^ {
-      case attributes ~ content =>
-        val attrMap = attributes.getOrElse(new LinkedHashMap[FtanString, FtanValue])
-        content.map { content => attrMap += FtanElement.CONTENT_KEY -> content }
-        FtanElement(attrMap)
-    }
-  }
+// following code looks OK but goes into infinite loop: MHK 2013-05-09
+// def text : Parser[FtanText] = {
+//
+//      def contentstring: Parser[FtanString] =
+//        escapeRegex("'<") ^^ {
+//          case s => FtanString(FtanString.deescapeString(s))
+//        }
+//
+//      "'" ~> ((contentstring | element)*) <~ "'" ^^ {
+//        value => FtanText(value)
+//      }
+//
+//    }
 
   def value: Parser[FtanValue] =
-    _null | boolean | number | string | array | element
+    _null | boolean | number | string | array | element | text
 
   def parse(exp: String): FtanValue = {
     this.value(new CharSequenceReader(exp)) match {

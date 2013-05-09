@@ -31,6 +31,14 @@ class Filter(out : Acceptor) extends Acceptor {
     out.processEndArray()
   }
 
+  def processStartText() {
+    out.processStartText()
+  }
+
+  def processEndText() {
+    out.processEndText()
+  }
+
   def processStartElement(name: Option[String]) {
     out.processStartElement(name)
   }
@@ -47,7 +55,7 @@ class Filter(out : Acceptor) extends Acceptor {
     out.processEndElement()
   }
 
-  def error(err: Exception) = {
+  def error(err: Exception) {
     out.error(err)
   }
 }

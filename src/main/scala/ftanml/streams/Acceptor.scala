@@ -84,6 +84,18 @@ trait Acceptor {
   def processEndElement()
 
   /**
+   * Process a startText event
+   */
+
+  def processStartText()
+
+  /**
+   * Process an endText event
+   */
+
+  def processEndText()
+
+  /**
    * Notify the acceptor that an error has occurred and no more events will be sent
    */
 

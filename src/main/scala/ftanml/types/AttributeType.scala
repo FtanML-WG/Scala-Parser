@@ -10,7 +10,7 @@ import ftanml.objects.{FtanArray, FtanValue, FtanString, FtanElement}
  * makes the attribute optional (but if present, it must still conform to the specified type)
  */
 
-class AttributeType(name: FtanString, attType: FtanType) extends FtanType {
+class AttributeType(name: String, attType: FtanType) extends FtanType {
   def matches(value: FtanValue) = {
     value match {
       case v: FtanElement => v(name).isInstance(attType)
@@ -18,5 +18,5 @@ class AttributeType(name: FtanString, attType: FtanType) extends FtanType {
     }
   }
 
-  def descriptor = new FtanElement("element").setContent(FtanArray(FtanElement().setAttribute(name.value, attType.descriptor)))
+  def descriptor = new FtanElement("element").setContent(FtanArray(FtanElement().setAttribute(name, attType.descriptor)))
 }

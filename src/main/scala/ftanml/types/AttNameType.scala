@@ -15,8 +15,8 @@ import ftanml.objects.{FtanString, FtanValue, FtanElement}
 class AttNameType(theType : FtanType) extends FtanType {
   def matches(value: FtanValue) = {
     value match {
-      case v: FtanElement => v.attributes.keys.forall {(name:FtanString) =>
-        name == FtanElement.NAME_KEY || name == FtanElement.CONTENT_KEY || name.isInstance(theType)}
+      case v: FtanElement => v.attributes.keys.forall {(name:String) =>
+        name == FtanElement.CONTENT_KEY || FtanString(name).isInstance(theType)}
       case _ => false
     }
   }

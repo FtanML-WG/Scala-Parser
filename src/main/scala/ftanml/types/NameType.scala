@@ -13,7 +13,12 @@ import ftanml.objects.{FtanValue, FtanString, FtanElement}
 class NameType(theType : FtanType) extends FtanType {
   def matches(value: FtanValue) = {
     value match {
-      case v: FtanElement => v(FtanElement.NAME_KEY).isInstance(theType)
+      case v: FtanElement => {
+        v.name match {
+          case Some(n) => FtanString(n).isInstance(theType)
+          case None => false
+        }
+      }
       case _ => false
     }
   }
