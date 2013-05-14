@@ -1,9 +1,10 @@
 package ftanml
 
+import expr._
+import functions._
 import objects._
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.parsing.input.CharSequenceReader
-import java.math.BigDecimal
 
 class FtanParser extends RegexParsers with DebugParser {
 
@@ -119,36 +120,96 @@ class FtanParser extends RegexParsers with DebugParser {
 
   def text : Parser[FtanText] = {
 
-      def contentstringCharacter: Parser[Char] =
-        "[^\\<>']".r ^^ { _.charAt(0) }
+    def contentstringCharacter: Parser[Char] =
+      "[^\\<>']".r ^^ { _.charAt(0) }
 
-      def contentstring: Parser[FtanString] =
-        ((escapedCharacter | contentstringCharacter)+) ^^ {
-          value => FtanString(("" /: value)(_ + _))
-        }
-
-      "'" ~> ((contentstring | element)*) <~ "'" ^^ {
-        value => FtanText(value)
+    def contentstring: Parser[FtanString] =
+      ((escapedCharacter | contentstringCharacter)+) ^^ {
+        value => FtanString(("" /: value)(_ + _))
       }
 
+    "'" ~> ((contentstring | element)*) <~ "'" ^^ {
+      value => FtanText(value)
     }
 
-// following code looks OK but goes into infinite loop: MHK 2013-05-09
-// def text : Parser[FtanText] = {
-//
-//      def contentstring: Parser[FtanString] =
-//        escapeRegex("'<") ^^ {
-//          case s => FtanString(FtanString.deescapeString(s))
-//        }
-//
-//      "'" ~> ((contentstring | element)*) <~ "'" ^^ {
-//        value => FtanText(value)
-//      }
-//
-//    }
+  }
+
+  def literal: Parser[Expression] = {
+    s ~> value ^^ {
+      v => new Literal(v)
+    }
+  }
+
+  def parenthetical: Parser[Expression] = {
+    (s ~ "(" ~ s) ~> expression <~ (s ~ ")" ~ s) ^^ {e => e}
+  }
+
+  def primary: Parser[Expression] = {
+    literal | parenthetical
+  }
+
+  def multiplicativeExpr: Parser[Expression] = {
+    primary * (
+            (s ~> "×" <~ s) ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.times, a::b::Nil) } |
+            (s ~> "÷" <~ s) ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.div, a::b::Nil) } )
+  }
+
+  def additiveExpr: Parser[Expression] = {
+    multiplicativeExpr * (
+            (s ~> "+" <~ s) ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.plus, a::b::Nil) } |
+            (s ~> "-" <~ s) ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.minus, a::b::Nil) } )
+  }
+
+  def comparisonExpr: Parser[Expression] = {
+    additiveExpr ~ opt(s ~> ("="|"!="|"<="|"<"|">="|">") ~ additiveExpr) ^^ {
+      case l ~ pred => {
+        pred match {
+          case Some(op~r) => {
+            op match {
+              case "=" => new FunctionCall(ftanml.functions.eq, l::r::Nil)
+              case "!=" => new FunctionCall(ftanml.functions.ne, l::r::Nil)
+              case "<=" => new FunctionCall(ftanml.functions.le, l::r::Nil)
+              case "<" => new FunctionCall(ftanml.functions.lt, l::r::Nil)
+              case ">=" => new FunctionCall(ftanml.functions.ge, l::r::Nil)
+              case ">" => new FunctionCall(ftanml.functions.gt, l::r::Nil)
+            }
+          }
+          case None => l
+        }
+      }
+    }
+  }
+
+  def andExpr: Parser[Expression] = {
+   comparisonExpr ~ opt(s ~> "&&" ~> andExpr) ^^ {
+      case lhs ~ rhs => {
+        rhs match {
+          case Some(e) => new AndExpr(lhs, e)
+          case None => lhs
+        }
+      }
+    }
+  }
+
+  def expression: Parser[Expression] = {
+    andExpr ~ opt(s ~> "||" ~> expression) ^^ {
+      case lhs ~ rhs => {
+        rhs match {
+          case Some(e) => new OrExpr(lhs, e)
+          case None => lhs
+        }
+      }
+    }
+  }
+
+  def function: Parser[UserFunction] = {
+    s ~> "{" ~> expression <~ ("}" ~ s) ^^ {
+      e => new UserFunction(e)
+    }
+  }
 
   def value: Parser[FtanValue] =
-    _null | boolean | number | string | array | element | text
+    _null | boolean | number | string | array | element | text | function
 
   def parse(exp: String): FtanValue = {
     this.value(new CharSequenceReader(exp)) match {

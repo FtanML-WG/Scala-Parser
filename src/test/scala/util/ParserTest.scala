@@ -5,7 +5,8 @@ import scala.util.parsing.input.CharSequenceReader
 import org.scalatest.Suite
 
 import ftanml.FtanParser
-import ftanml.objects.FtanValue
+import ftanml.objects.{FtanFunction, FtanValue}
+import ftanml.exec.Context
 
 /**
  * Inheriting from this class allows a very easy way to write test cases.
@@ -77,8 +78,16 @@ trait ParserTest extends TestHelper {
       generated should_equal str
       value
     }
-    def invalid {
+    def invalid = {
       evaluating(TestParser.parsing(str)) should produce[IllegalArgumentException]
+    }
+    def ~~>(value: FtanValue) = {
+      val parsed = TestParser.parsing(str)
+      parsed match {
+        case f: FtanFunction => f(new Context(None, Map(), List()), List()) should_equal value
+        case _ => throw new IllegalArgumentException(str + " is not a function")
+      }
+      value
     }
   }
   implicit def val2Test(value: FtanValue) = new {

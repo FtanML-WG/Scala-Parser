@@ -36,4 +36,12 @@ abstract class FtanValue {
   def isInstance (aType : FtanType) : Boolean = {
     aType.matches(this)
   }
+
+  def asBoolean (message: String): Boolean = {
+    this match {
+      case b: FtanBoolean => b.value
+      case _ => throw new ClassCastException("The " + message + " must be a boolean")
+    }
+  }
+
 }
