@@ -23,17 +23,10 @@ class ContentExpander(out : Acceptor) extends Filter(out) {
 //    }
   }
 
-  override def processStartContent(isElementOnly: Boolean) {
-    elementStack.pop()
-    elementStack.push(true)
-    out.processAttributeName(FtanElement.CONTENT_KEY)
-    out.processStartArray()
-  }
-
   override def processEndElement() {
     val inContent = elementStack.pop()
     if (inContent) {
-      out.processEndArray()
+      out.processEndList()
     }
     out.processEndElement()
   }

@@ -23,8 +23,8 @@ object Implicits {
 	}
 	
 	implicit def FtanValue2FtanArray(value: FtanValue) = {
-		if(value.isInstanceOf[FtanArray]){
-			value.asInstanceOf[FtanArray]
+		if(value.isInstanceOf[FtanList]){
+			value.asInstanceOf[FtanList]
 		}else{
 			throw new NotAnInstanceException("Value " + value + " is not an instance of FtanArray")
 		}

@@ -1,6 +1,6 @@
 package ftanml.types
 
-import ftanml.objects.{FtanArray, FtanElement, FtanValue}
+import ftanml.objects.{FtanList, FtanElement, FtanValue}
 
 
 /**
@@ -11,5 +11,5 @@ case class EnumerationType(values : Traversable[FtanValue]) extends FtanType {
   
   def matches(value: FtanValue) = values.exists(_==value)
 
-  def descriptor = new FtanElement().setAttribute("enum", FtanArray(List.concat(values)))
+  def descriptor = new FtanElement().setAttribute("enum", FtanList(List.concat(values)))
 }

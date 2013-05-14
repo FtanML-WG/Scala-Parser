@@ -19,9 +19,10 @@ object TypeFactory {
     "string" -> ((e: FtanElement) => {checkEmpty(e); StringType}),
     "number" -> ((e: FtanElement) => {checkEmpty(e); NumberType}),
     "boolean" -> ((e: FtanElement) => {checkEmpty(e); BooleanType}),
-    "array" -> ((e: FtanElement) => {if (e.isNullContent) ArrayType else arrayWithGrammar(e.content)}),
-    "element" -> ((e: FtanElement) => {if (e.isNullContent) ElementType else elementProforma(singletonChildElement(e))}),
-    "any" -> ((e: FtanElement) => {checkEmpty(e); AnyType}),
+    "list" -> ((e: FtanElement) => {if (e.isNullContent) ListType else listWithGrammar(e.content)}),
+    "element" -> ((e: FtanElement) => {checkEmpty(e); ElementType}),
+    "text" -> ((e: FtanElement) => {checkEmpty(e); TextType}),
+    "value" -> ((e: FtanElement) => {checkEmpty(e); AnyType}),
     "nothing" -> ((e: FtanElement) => {checkEmpty(e); NothingType}),
     "nullable" -> ((e: FtanElement) => {new AnyOfType(List(NullType, makeType(singletonChildElement(e))))}),
     "not" -> ((e: FtanElement) => {new ComplementType(makeType(singletonChildElement(e)))}),
@@ -31,17 +32,29 @@ object TypeFactory {
   
   val facets = collection.immutable.HashMap[String, (FtanType, FtanValue => FtanType)] (
   	"attName" -> (ElementType, (v: FtanValue) => new AttNameType(makeType(v))),
-    "fixed" -> (AnyType, (v: FtanValue) => new FixedValueType(v)),
-    "enum" -> (ArrayType, (v: FtanValue) => new EnumerationType(v.values)),
+    "eq" -> (AnyType, (v: FtanValue) => new FixedValueType(v)),
+    "enum" -> (ListType, (v: FtanValue) => new EnumerationType(v.values)),
+    "form" -> (ElementType, (v: FtanValue) => elementProforma(v)),
     "itemType" -> (ElementType, (v: FtanValue) => new ItemType(makeType(v))),
-    "min" -> (NumberType, (v: FtanValue) => new MinValueType(v, false)),
-    "minExclusive"-> (NumberType, (v: FtanValue) => new MinValueType(v, true)),
-    "max"-> (NumberType, (v: FtanValue) => new MaxValueType(v, false)),
-    "maxExclusive"-> (NumberType, (v: FtanValue) => new MaxValueType(v, true)),
-    "name"-> (ElementType, (v: FtanValue) => new NameType(makeType(v))),
+    "ge" -> (NumberType, (v: FtanValue) => new MinValueType(v, false)),
+    "grammar" -> (ElementType, (v: FtanValue) => listWithGrammar(v)),
+    "gt" -> (NumberType, (v: FtanValue) => new MinValueType(v, true)),
+    "le" -> (NumberType, (v: FtanValue) => new MaxValueType(v, false)),
+    "lt" -> (NumberType, (v: FtanValue) => new MaxValueType(v, true)),
+    "name" -> (ElementType, (v: FtanValue) => new NameType(makeType(v))),
     //"nameMatches"-> (StringType, (v: FtanValue) => new NameType(v, true)),
-    "regex"-> (StringType, (v: FtanValue) => new RegexType(v)),
-    "size"-> (NumberType, (v: FtanValue) => new SizeType(v))
+    "pattern"-> (StringType, (v: FtanValue) => new RegexType(v)),
+    "size"-> (NumberType, (v: FtanValue) => {
+      v match {
+        case n: FtanNumber => new SizeType(n.toInt)
+        case _ => throw new IllegalArgumentException("size facet must be a number")
+      }}),
+    "step" -> (NumberType, (v: FtanValue) => {
+      v match {
+        case n: FtanNumber => new StepType(n.value)
+        case _ => throw new IllegalArgumentException("step facet must be a number")
+      }})
+
   )
 
   def checkEmpty(e: FtanElement) {
@@ -52,14 +65,14 @@ object TypeFactory {
 
   def contentTypes(e: FtanElement) : Traversable[FtanType] = {
     e.content match {
-      case c: FtanElement =>
-        c.values.map({ t: FtanValue =>
-                makeType(t)
-              })
-      case _ =>
-        throw new InvalidTypeException("Type descriptor <" + e.name + "> must have element-only content")
+      case c: FtanList =>
+        c.values.map {
+          _ match {
+            case el: FtanElement => makeType(el)
+            case _ => throw new InvalidTypeException("Type descriptor <" + e.name + "> must have element-only content")
+          }
+        }
     }
-
   }
 
   def singletonChildElement(e: FtanElement) : FtanElement = {
@@ -71,26 +84,34 @@ object TypeFactory {
 
   def elementProforma(element: FtanElement) : FtanType = {
     val memberTypes : Traversable[FtanType] = {
-      element.name match {
-        case Some(n) => {new NameType(new FixedValueType(FtanString(n)))}
-        case None =>
-      }
-      for ((name, value) <- element.attributes) yield {
-        name match {
-          case FtanElement.CONTENT_KEY =>
-            new ContentGrammar(arrayWithGrammar(value.asInstanceOf[FtanArray]))
-          case _ =>
+      val namedType: Option[NameType] =
+        element.name match {
+          case Some(n) => Some(new NameType(new FixedValueType(FtanString(n))))
+          case None => None
+        }
+
+      val extraTypes: Iterable[FtanType] =
+        element.attributes.map {
+          case (name, value) =>
             if (!value.isInstanceOf[FtanElement]) {
-              throw new InvalidTypeException("Invalid value for attribute " + name + " in element proforma: expected a type")
+              throw new InvalidTypeException("Invalid value for " +
+                (name match {
+                  case "" => "content"
+                  case _ => "attribute" + name
+                }) + " in element proforma: expected a type")
             }
             new AttributeType(name, makeType(value))
 
         }
+
+      namedType match {
+        case Some(t) => t :: extraTypes.toList
+        case None => extraTypes.toList
       }
     }
 
     if(memberTypes.size == 0) {
-      ElementType
+      AnyType
     } else if (memberTypes.size == 1) {
       memberTypes.head
     } else {
@@ -98,11 +119,35 @@ object TypeFactory {
     }
   }
 
-  def arrayWithGrammar(content: FtanArray) : Grammar = {
-    new SequenceParticle(1, 1, particles(content)).makeGrammar
+  def listWithGrammar(top: FtanElement) : Grammar = {
+    var (min, max) = getOccurs(top)
+    top.name match {
+      case Some("seq") =>
+        new SequenceParticle(min, max, particles(top.content)).makeGrammar
+      case Some("choice") =>
+        new ChoiceParticle(min, max, particles(top.content)).makeGrammar
+      case Some(typeName) =>
+        new LeafParticle(min, max, makeType(top)).makeGrammar
+      case None =>
+        throw new InvalidTypeException("Unknown type name <" + top.name + ">")
+    }
+
   }
 
-  private def particles(content: FtanArray) : Seq[ftanml.grammar.Particle] = {
+  def getOccurs(top: FtanElement) : (Int,  Int) = {
+    var occurs = top("occurs")
+    occurs match {
+      case FtanNull => (1, 1)
+      case a: FtanList => (a(0).asInstanceOf[FtanNumber].toInt,
+        a(1) match {
+          case FtanNull => ftanml.grammar.Particle.UNBOUNDED;
+          case _ => a(1).asInstanceOf[FtanNumber].toInt
+        })
+      case _ => throw new InvalidTypeException("Invalid occurs value <" + occurs + ">")
+    }
+  }
+
+  private def particles(content: FtanList) : Seq[ftanml.grammar.Particle] = {
     content.values.map((v: FtanValue) => {
       v match {
         case e: FtanElement => {
@@ -132,45 +177,50 @@ object TypeFactory {
               }
               new ChoiceParticle(min, max, particles(e.content))
             case _ =>
-              new LeafParticle(makeType(e))
+              new LeafParticle(1, 1, makeType(e))
           }
         }
-        case _ => new ChoiceParticle(1, 1, particles(FtanArray()))// TODO: error
+        case _ => new ChoiceParticle(1, 1, particles(FtanList()))// TODO: error
       }
     })
 
   }
 
   def makeType(element: FtanElement): FtanType = {
-    val memberTypes = {
-      for ((name, value) <- element.attributes) yield {
-        name match {
-//          case FtanElement.NAME_KEY.value =>
-//            val str = value.asInstanceOf[FtanString].value
-//            namedTypes.get(str) match {
-//              case Some(t) => t(element)
-//              case _ => throw new InvalidTypeException("Unknown type name <" + str + ">")
-//            }
-          case _ =>
-            facets.get(name) match {
-              case Some((t: FtanType, f: (FtanValue => FtanType))) => {
-              	if(!value.isInstance(t)){
-              		throw new InvalidTypeException("Invalid value for " + name + " facet")
-              	}
-                f(value)
-              }
-              case _ => AnyType  // ignore unrecognized facets
+    val memberTypes: List[FtanType] = {
+      val namedType: Option[FtanType] =
+        element.name match {
+          case Some(n) =>
+            namedTypes.get(n) match {
+              case Some(t) => Some(t(element))
+              case _ => throw new InvalidTypeException("Unknown type name <" + n + ">")
             }
+          case None => None
         }
+      val facetTypes: Iterable[FtanType] =
+        element.attributes.map {case (name, value) =>
+          facets.get(name) match {
+            case Some((t: FtanType, f: (FtanValue => FtanType))) => {
+              if(!value.isInstance(t)){
+                throw new InvalidTypeException("Invalid value for " + name + " facet")
+              }
+              f(value).asInstanceOf[FtanType]
+            }
+            case _ => AnyType  // ignore unrecognized facets
+          }
+        }
+      namedType match {
+        case Some(t) => t :: facetTypes.toList
+        case None => facetTypes.toList
       }
     }
 
     if(memberTypes.size == 0) {
       AnyType
     } else if (memberTypes.size == 1) {
-      memberTypes.head
+      memberTypes.head.asInstanceOf[FtanType]
     } else {
-      new AllOfType(memberTypes)
+      new AllOfType(memberTypes.asInstanceOf[Traversable[FtanType]])
     }
   }
 

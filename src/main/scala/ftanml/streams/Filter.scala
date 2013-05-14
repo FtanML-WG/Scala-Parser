@@ -11,7 +11,7 @@ class Filter(out : Acceptor) extends Acceptor {
     out.processString(value)
   }
 
-  def processNumber(value: Double) {
+  def processNumber(value: java.math.BigDecimal) {
     out.processNumber(value)
   }
 
@@ -23,12 +23,12 @@ class Filter(out : Acceptor) extends Acceptor {
     out.processNull()
   }
 
-  def processStartArray() {
-    out.processStartArray()
+  def processStartList() {
+    out.processStartList()
   }
 
-  def processEndArray() {
-    out.processEndArray()
+  def processEndList() {
+    out.processEndList()
   }
 
   def processStartText() {
@@ -45,10 +45,6 @@ class Filter(out : Acceptor) extends Acceptor {
 
   def processAttributeName(name: String) {
     out.processAttributeName(name)
-  }
-
-  def processStartContent(isElementOnly: Boolean) {
-    out.processStartContent(isElementOnly)
   }
 
   def processEndElement() {

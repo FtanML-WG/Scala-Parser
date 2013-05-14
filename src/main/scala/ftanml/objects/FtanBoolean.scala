@@ -1,6 +1,5 @@
 package ftanml.objects
 
-import java.io.Writer
 import ftanml.streams.Acceptor
 
 object FtanBoolean extends FtanBoolean(false)

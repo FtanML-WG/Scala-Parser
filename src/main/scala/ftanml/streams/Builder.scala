@@ -15,7 +15,7 @@ class Builder extends Acceptor {
     stack.top.add(FtanString(value))
   }
 
-  def processNumber(value: Double) {
+  def processNumber(value: java.math.BigDecimal) {
     stack.top.add(FtanNumber(value))
   }
 
@@ -27,18 +27,23 @@ class Builder extends Acceptor {
     stack.top.add(FtanNull)
   }
 
-  def processStartArray() {
-    stack.push(new ArrayBuilder)
+  def processStartList() {
+    stack.push(new ListBuilder)
   }
 
-  def processEndArray() {
+  def processEndList() {
     val arrayVal = stack.pop();
     stack.top.add(arrayVal.getValue)
   }
 
-  def processStartText() {}
+  def processStartText() {
+    stack.push(new TextBuilder())
+  }
 
-  def processEndText() {}
+  def processEndText() {
+    val arrayVal = stack.pop();
+    stack.top.add(arrayVal.getValue)
+  }
 
   def processStartElement(name: Option[String]) {
     stack.push(new ElementBuilder(name))
@@ -48,16 +53,7 @@ class Builder extends Acceptor {
     stack.top.asInstanceOf[ElementBuilder].attribute(name)
   }
 
-  def processStartContent(isElementOnly: Boolean) {
-    stack.push(new ContentBuilder)
-  }
-
   def processEndElement() {
-    if (stack.top.isInstanceOf[ContentBuilder]) {
-      val content = stack.pop().getValue
-      stack.top.asInstanceOf[ElementBuilder].setContent(content.asInstanceOf[FtanArray])
-    }
-
     val element = stack.pop().getValue
     stack.top.add(element)
   }

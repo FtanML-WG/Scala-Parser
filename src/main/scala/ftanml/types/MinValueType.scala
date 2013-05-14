@@ -10,10 +10,13 @@ import ftanml.objects.{FtanElement, FtanNumber, FtanValue}
 class MinValueType(minValue : FtanNumber, exclusive : Boolean) extends FtanType {
   def matches(value: FtanValue) = {
     value match {
-      case v : FtanNumber => if(exclusive) v.value > minValue.value else v.value >= minValue.value
+      case v : FtanNumber => {
+        var c = v.value.compareTo(minValue.value)
+        c > 0 || (c == 0 && !exclusive)
+      }
       case _ => false
     }
   }
 
-  def descriptor = new FtanElement().setAttribute((if (exclusive) "minExclusive" else "min"), minValue)
+  def descriptor = new FtanElement().setAttribute((if (exclusive) "gt" else "ge"), minValue)
 }

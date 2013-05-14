@@ -3,6 +3,7 @@ package ftanml
 import objects._
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.parsing.input.CharSequenceReader
+import java.math.BigDecimal
 
 class FtanParser extends RegexParsers with DebugParser {
 
@@ -18,7 +19,7 @@ class FtanParser extends RegexParsers with DebugParser {
 
   def number: Parser[FtanNumber] =
     """-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?""".r ^^ {
-      value => FtanNumber(value.toDouble)
+      value => FtanNumber(value)
     }
 
   private def escapedCharacter: Parser[String] =
@@ -31,12 +32,12 @@ class FtanParser extends RegexParsers with DebugParser {
 //      value => FtanArray(value)
 //    }
 
-  def array: Parser[FtanArray] = {
+  def array: Parser[FtanList] = {
 
     s ~> "[" ~> ( rep(s ~> (value | ",")) <~ s) <~ ("]" ~ s) ^^ {
-      case Nil => FtanArray()
+      case Nil => FtanList()
       case seq => {
-        FtanArray(
+        FtanList(
           (","+:seq, seq:+",").zipped.flatMap((X, Y) =>
             (X, Y) match {
               case (",", ",") => Seq(FtanNull)

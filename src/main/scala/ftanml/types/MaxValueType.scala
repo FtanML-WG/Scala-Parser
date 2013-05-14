@@ -10,10 +10,13 @@ import ftanml.objects.{FtanElement, FtanNumber, FtanValue}
 class MaxValueType(maxValue : FtanNumber, exclusive : Boolean) extends FtanType {
   def matches(value: FtanValue) = {
     value match {
-      case v : FtanNumber => if(exclusive) v.value < maxValue.value else v.value <= maxValue.value
+      case v : FtanNumber => {
+        var c = v.value.compareTo(maxValue.value)
+        c < 0 || (c == 0 && !exclusive)
+      }
       case _ => false
     }
   }
 
-  def descriptor = new FtanElement().setAttribute((if (exclusive) "maxExclusive" else "max"), maxValue)
+  def descriptor = new FtanElement().setAttribute((if (exclusive) "lt" else "le"), maxValue)
 }

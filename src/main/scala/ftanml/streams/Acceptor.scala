@@ -30,7 +30,7 @@ trait Acceptor {
    * Process a numeric value
    */
 
-  def processNumber(value : Double)
+  def processNumber(value : java.math.BigDecimal)
 
   /**
    * Process a boolean value
@@ -45,16 +45,16 @@ trait Acceptor {
   def processNull()
 
   /**
-   * Process a startArray event
+   * Process start of list
    */
   
-  def processStartArray()
+  def processStartList()
 
   /**
-   * Process an endArray event
+   * Process end of list
    */
 
-  def processEndArray()
+  def processEndList()
 
   /**
    * Process a startElement event
@@ -64,18 +64,11 @@ trait Acceptor {
 
   /**
    * Process an attribute name. The attribute value will follow in the next call, or in the next
-   * start/end bracketed sequence of calls
+   * start/end bracketed sequence of calls. The element content is sent as an attribute, with the
+   * name "", if it is present; it will always come last.
    */
 
   def processAttributeName(name : String)
-
-  /**
-   * Process the start of the content of an element. The isElementOnly flag
-   * should be set to true if it is known that the content is element-only; it can
-   * be set to false if it is not known what the content will be
-   */
-
-  def processStartContent(isElementOnly : Boolean)
 
   /**
    * Process an endElement event

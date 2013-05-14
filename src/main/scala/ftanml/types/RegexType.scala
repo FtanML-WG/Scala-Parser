@@ -21,7 +21,7 @@ class RegexType(pattern : FtanString) extends FtanType {
     }
   }
 
-  override def descriptor = new FtanElement().setAttribute("regex", pattern)
+  override def descriptor = new FtanElement().setAttribute("pattern", pattern)
 
 
 }

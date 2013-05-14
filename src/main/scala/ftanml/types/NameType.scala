@@ -1,6 +1,7 @@
 package ftanml.types
 
-import ftanml.objects.{FtanValue, FtanString, FtanElement}
+import ftanml.objects.{FtanNull, FtanValue, FtanString, FtanElement}
+
 
 /**
  * A NameType is a facet applied to elements, that constrains the name of the
@@ -16,7 +17,7 @@ class NameType(theType : FtanType) extends FtanType {
       case v: FtanElement => {
         v.name match {
           case Some(n) => FtanString(n).isInstance(theType)
-          case None => false
+          case None => FtanNull.isInstance(theType)
         }
       }
       case _ => false

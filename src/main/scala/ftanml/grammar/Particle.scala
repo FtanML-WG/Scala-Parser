@@ -2,10 +2,14 @@ package ftanml.grammar
 
 import ftanml.types.FtanType
 
+object Particle {
+  def UNBOUNDED = -1
+}
+
 
 class Particle (min: Int, max: Int) {
 
-  val UNBOUNDED = -1
+
 
   def makeGrammar: Grammar = {
     val machine = new Machine();
@@ -18,7 +22,7 @@ class Particle (min: Int, max: Int) {
 
   def compileParticle(machine: Machine, endState: State) : State = {
     var n : State = endState
-    if (max == UNBOUNDED) {
+    if (max == Particle.UNBOUNDED) {
       val t = machine.allocateState(false)
       val b = compileTerm (machine, t)
       b.addLambdaTransition (n)
@@ -52,7 +56,7 @@ class Particle (min: Int, max: Int) {
           b.addLambdaTransition(c)
         }
         b
-      case LeafParticle(theType) =>
+      case LeafParticle(_, _, theType) =>
         val b: State = machine.allocateState(false)
         val edge = new Edge(theType, endState)
         b.addTransition(edge)
@@ -67,5 +71,9 @@ case class SequenceParticle(min : Int,  max: Int, body : Seq[Particle]) extends 
 
 case class ChoiceParticle(min : Int,  max: Int, body : Seq[Particle]) extends Particle(min, max)
 
-case class LeafParticle(theType : FtanType) extends Particle(1, 1)
+case class LeafParticle(min : Int,  max: Int, theType : FtanType) extends Particle(min, max)
+
+object LeafParticle {
+  def apply(theType: FtanType) = new LeafParticle(1, 1, theType)
+}
 

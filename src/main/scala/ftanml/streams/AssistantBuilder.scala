@@ -38,25 +38,34 @@ class ItemBuilder() extends AssistantBuilder {
 }
 
 /**
- * An ArrayBuilder is placed at the top of stack when an array is started, and is removed
+ * A ListBuilder is placed at the top of stack when an array is started, and is removed
  * when the array is closed.
  */
 
-class ArrayBuilder() extends AssistantBuilder {
+class ListBuilder() extends AssistantBuilder {
   var list = new ListBuffer[FtanValue]
   def add(value : FtanValue) {
     list.append(value)
   }
-  def getValue = FtanArray(list)
+  def getValue = FtanList(list)
 }
 
 /**
- * A ContentBuilder is an ArrayBuilder used for construction of element content;
+ * A TextBuilder is an ArrayBuilder used for construction of mixed text content;
  * it exists as a separate class only so that it can be recognized during endElement
  * processing
  */
 
-class ContentBuilder extends ArrayBuilder {}
+class TextBuilder extends AssistantBuilder {
+  var list = new ListBuffer[TextComponent]
+  def add(value : FtanValue) {
+    value match {
+      case t :TextComponent => list.append(t)
+      case _ => throw new IllegalArgumentException("Wrong type of value for FtanML text")
+    }
+  }
+  def getValue = FtanText(list)
+}
 
 /**
  * An ElementBuilder is placed on the top of stack when an elementStart event
@@ -73,15 +82,11 @@ class ElementBuilder(name : Option[String]) extends AssistantBuilder {
     currentAtt = name
   }
 
-  def setContent(content : FtanArray) {
-    map.put(FtanElement.CONTENT_KEY, content)
-  }
-
   def add(value : FtanValue) {
     map.put(currentAtt, value)
   }
 
-  def getValue = FtanElement(map.toMap)
+  def getValue = FtanElement(name, map.toMap)
 }
 
 

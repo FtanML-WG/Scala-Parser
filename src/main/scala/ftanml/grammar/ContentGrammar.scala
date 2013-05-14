@@ -1,7 +1,7 @@
 package ftanml.grammar
 
-import ftanml.objects.{FtanElement, FtanArray, FtanValue}
-import ftanml.types.{ElementType, ArrayType, FtanType}
+import ftanml.objects.{FtanElement, FtanList, FtanValue}
+import ftanml.types.{ElementType, ListType, FtanType}
 
 
 class ContentGrammar(grammar: Grammar) extends FtanType {

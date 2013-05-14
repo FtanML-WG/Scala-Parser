@@ -18,6 +18,31 @@ private class JSONSerializer(writer : Writer, indenting : Boolean) extends Seria
   protected override val attSeparator = ','
   protected override val attPunctuation = ':'
 
+  override def processStartElement(name: Option[String]) {
+    if (!stack.isEmpty && (stack.top == middleOfText)) {
+      writer.append(',')
+    }
+    super.processStartElement(name)
+    if (!stack.isEmpty && (stack.top == startOfText)) {
+      replaceTop(middleOfText)
+    }
+  }
+
+  override protected def writeElementName(name : String) {
+    writer.append("\"$name\":")
+    formatString(name)
+  }
+
+  override protected def writeAttributeName(name: String) {
+    if (!name.isEmpty) {
+      formatString(name)
+      writer.append(attPunctuation);
+    } else {
+      formatString("$content")
+      writer.append(attPunctuation);
+    }
+  }
+
   override protected def writeName(name : String) {
     formatString(name)
   }
@@ -27,9 +52,34 @@ private class JSONSerializer(writer : Writer, indenting : Boolean) extends Seria
     writer.append('"' + escapedValue(value, '"') + '"');
   }
 
+  override def processStartText() {
+    preValue()
+    writer.append("[")
+    stack.push(startOfText)
+  }
+
+  override def processEndText() {
+    stack.pop()
+    writer.append("]")
+    postValue()
+  }
+
+  override def processString(value: String) {
+    if (!stack.isEmpty && (stack.top == startOfText)) {
+      writer.append('"' + escapedValue(value, '<') + '"')
+      replaceTop(middleOfText)
+    } else if (!stack.isEmpty && (stack.top == middleOfText)) {
+      writer.append(",\"" + escapedValue(value, '<') + '"')
+    } else {
+      preValue()
+      formatString(value)
+      postValue()
+    }
+  }
+
 }
 
 object JSONSerializerFactory {
   def make(writer : Writer,  indenting : Boolean) : Acceptor =
-   new ContentExpander(new JSONSerializer(writer, indenting))
+   new JSONSerializer(writer, indenting)
 }

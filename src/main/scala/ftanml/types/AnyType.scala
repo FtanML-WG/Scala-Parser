@@ -1,12 +1,14 @@
 package ftanml.types
 
-import ftanml.objects.{FtanString, FtanElement}
+import ftanml.objects.{FtanValue, FtanElement}
 
 
 /**
  * A type that matches any value
  */
-object AnyType extends AllOfType(Nil) {
+object AnyType extends FtanType {
+
+  def matches(value: FtanValue) = true
 
   override def descriptor = new FtanElement("any")
 

@@ -23,11 +23,11 @@ object BooleanType extends FtanType {
   override def descriptor = new FtanElement("boolean")
 }
 
-object ArrayType extends FtanType {
+object ListType extends FtanType {
   override def matches(value: FtanValue) = {
-    value.isInstanceOf[FtanArray]
+    value.isInstanceOf[FtanList]
   }
-  override def descriptor = new FtanElement("array")
+  override def descriptor = new FtanElement("list")
 }
 
 object ElementType extends FtanType {
@@ -35,6 +35,13 @@ object ElementType extends FtanType {
     value.isInstanceOf[FtanElement]
   }
   override def descriptor = new FtanElement("element")
+}
+
+object TextType extends FtanType {
+  override def matches(value: FtanValue) = {
+    value.isInstanceOf[FtanText]
+  }
+  override def descriptor = new FtanElement("text")
 }
 
 object NullType extends FtanType {

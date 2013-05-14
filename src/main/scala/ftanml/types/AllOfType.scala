@@ -1,6 +1,6 @@
 package ftanml.types
 
-import ftanml.objects.{FtanArray, FtanElement, FtanValue}
+import ftanml.objects.{FtanList, FtanElement, FtanValue}
 
 
 /**
@@ -11,5 +11,5 @@ class AllOfType (memberTypes : Traversable[FtanType]) extends FtanType {
   
   def matches(value: FtanValue) : Boolean = memberTypes.forall{_.matches(value)}
 
-  def descriptor = new FtanElement("allOf").setContent(FtanArray(List.concat(memberTypes.map(_.descriptor))))
+  def descriptor = new FtanElement("allOf").setContent(FtanList(List.concat(memberTypes.map(_.descriptor))))
 }

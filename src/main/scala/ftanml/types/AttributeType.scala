@@ -1,6 +1,6 @@
 package ftanml.types
 
-import ftanml.objects.{FtanArray, FtanValue, FtanString, FtanElement}
+import ftanml.objects.{FtanList, FtanValue, FtanString, FtanElement}
 
 
 /**
@@ -18,5 +18,5 @@ class AttributeType(name: String, attType: FtanType) extends FtanType {
     }
   }
 
-  def descriptor = new FtanElement("element").setContent(FtanArray(FtanElement().setAttribute(name, attType.descriptor)))
+  def descriptor = new FtanElement("element").setContent(FtanList(FtanElement().setAttribute(name, attType.descriptor)))
 }

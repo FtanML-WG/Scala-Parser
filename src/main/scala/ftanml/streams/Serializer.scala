@@ -3,6 +3,7 @@ package ftanml.streams
 import java.io.Writer
 import collection.mutable.Stack
 import ftanml.util.Unicode
+import ftanml.objects.FtanNumber
 
 /**
  * A serializer accepts a stream of events representing a FtanML value and outputs
@@ -17,7 +18,8 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
   protected val middleOfArray = 2
   protected val startOfElement = 3
   protected val middleOfElement = 4
-  protected val inContent = 5
+  protected val startOfText = 5
+  protected val middleOfText = 6
 
   protected val startElement = '<'
   protected val endElement = '>'
@@ -32,8 +34,9 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
   }
 
   def processString(value: String) {
-    if (!stack.isEmpty && (stack.top == inContent)) {
+    if (!stack.isEmpty && (stack.top == startOfText)) {
       writer.append(escapedValue(value, '<'))
+      replaceTop(middleOfText)
     } else {
       preValue()
       formatString(value)
@@ -86,11 +89,11 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
     ("" /: Unicode.codepoints(value).map(escapeChar))(_ ++ _)
   }
 
-  def processNumber(value: Double) {
+  def processNumber(value: java.math.BigDecimal) {
     preValue()
-    if (value == value.floor && !value.isInfinite) {
+    if (FtanNumber.isWhole(value)) {
       // use integer notation for whole numbers
-      writer.append(value.asInstanceOf[Long].toString)
+      writer.append(value.longValue().toString)
     } else {
       writer.append(value.toString)
     }
@@ -109,13 +112,13 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
     postValue()
   }
 
-  def processStartArray() {
+  def processStartList() {
     preValue()
     writer.append("[")
     stack.push(startOfArray)
   }
 
-  def processEndArray() {
+  def processEndList() {
     stack.pop()
     writer.append("]")
     postValue()
@@ -124,7 +127,7 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
   def processStartText() {
     preValue()
     writer.append("'")
-    stack.push(inContent)
+    stack.push(startOfText)
   }
 
   def processEndText() {
@@ -138,7 +141,7 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
     writer.append(startElement)
     stack.push(startOfElement)
     name.map { name =>
-      writeName(name);
+      writeElementName(name);
       replaceTop(middleOfElement)
     }
   }
@@ -148,18 +151,7 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
       writer.append(attSeparator);
     }
     stack.push(middleOfElement)
-    if (!name.isEmpty) {
-      writeName(name)
-      writer.append(attPunctuation);
-    }
-  }
-
-  def processStartContent(isElementOnly: Boolean) {
-    // TODO: omit "|" for element-only content. But note that tests in ElementTest will have to change
-    //if (!isElementOnly) {
-      writer.append("|")
-    //}
-    replaceTop(inContent)
+    writeAttributeName(name)
   }
 
   def processEndElement() {
@@ -184,6 +176,17 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
 
   protected def postValue() {
 
+  }
+
+  protected def writeElementName(name: String) {
+    writeName(name)
+  }
+
+  protected def writeAttributeName(name: String) {
+    if (!name.isEmpty) {
+      writeName(name)
+      writer.append(attPunctuation);
+    }
   }
 
   private def isValidName(name: String) = name.matches("[\\p{Alpha}][\\p{Alpha}\\p{Digit}_:]*")

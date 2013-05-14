@@ -4,14 +4,14 @@ import java.io.Writer
 import ftanml.streams.Acceptor
 
 
-object FtanArray extends FtanArray(Nil) {
+object FtanList extends FtanList(Nil) {
   //There is at least one argument
-  def apply(first: FtanValue, rest: FtanValue*) = new FtanArray(first::rest.toList)
+  def apply(first: FtanValue, rest: FtanValue*) = new FtanList(first::rest.toList)
   //zero argument case
-  def apply() = new FtanArray(Nil)
+  def apply() = new FtanList(Nil)
 }
 
-case class FtanArray(values: Seq[FtanValue]) extends FtanValue with SizedObject {
+case class FtanList(values: Seq[FtanValue]) extends FtanValue with SizedObject {
 
   /**
    * _(i) selects the i'th item of the FtanArray
@@ -34,11 +34,11 @@ case class FtanArray(values: Seq[FtanValue]) extends FtanValue with SizedObject 
 
 
   override def send(acceptor: ftanml.streams.Acceptor) {
-    acceptor.processStartArray()
+    acceptor.processStartList()
     values.foreach {
       _.send(acceptor)
     }
-    acceptor.processEndArray()
+    acceptor.processEndList()
   }
 
 //  def writeFtanMLContent(writer: Writer) {
@@ -50,6 +50,13 @@ case class FtanArray(values: Seq[FtanValue]) extends FtanValue with SizedObject 
 //        throw new IllegalStateException("Given FtanArray isn't valid content for a FtanElement");
 //    }
 //  }
+
+
+  override def equals(obj: Any) = {
+    obj.isInstanceOf[FtanList] &&
+      size == obj.asInstanceOf[FtanList].size &&
+      !(values, obj.asInstanceOf[FtanList].values).zipped.exists(_ != _)
+  }
 
   lazy val size = values.length
 }

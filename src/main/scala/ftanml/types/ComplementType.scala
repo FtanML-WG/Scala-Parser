@@ -1,6 +1,6 @@
 package ftanml.types
 
-import ftanml.objects.{FtanArray, FtanElement, FtanValue}
+import ftanml.objects.{FtanList, FtanElement, FtanValue}
 
 
 /**
@@ -11,5 +11,5 @@ class ComplementType(base : FtanType) extends FtanType {
   
   def matches(value: FtanValue) = !base.matches(value)
 
-  def descriptor = new FtanElement("not").setContent(FtanArray(List(base.descriptor)))
+  def descriptor = new FtanElement("not").setContent(FtanList(List(base.descriptor)))
 }
