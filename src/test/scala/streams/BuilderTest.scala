@@ -53,7 +53,7 @@ class BuilderTest extends ParserTest with FlatSpec {
     roundTrips("true")
     roundTrips("[false]")
     roundTrips("<a=false>")
-    roundTrips("<|<|<a=false>>>")
+    roundTrips("<'<'<a=false>'>'>")
   }
 
   "Arrays" should "effectively round-trip" in {

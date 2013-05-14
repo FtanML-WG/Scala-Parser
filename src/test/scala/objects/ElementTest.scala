@@ -3,6 +3,8 @@ package objects
 import org.scalatest.FlatSpec
 import util.ParserTest
 import ftanml.objects._
+import ftanml.types.ListType
+import ftanml.objects.FtanList._
 
 class ElementTest extends ParserTest with FlatSpec {
   "Elements" should "be compared correctly (equals, hashCode)" in {
@@ -12,7 +14,7 @@ class ElementTest extends ParserTest with FlatSpec {
     FtanElement("key" -> FtanTrue, "key2" -> FtanNull) should_equal FtanElement("key" -> FtanBoolean(true), "key2" -> FtanNull)
     FtanElement("key" -> FtanNull) should_equal FtanElement("key" -> FtanNull)
     FtanElement("key2" -> FtanNull, "key3" -> FtanString("MeinName"), "key4" -> FtanString("bla")) should_equal FtanElement("key2" -> FtanNull, "key3" -> FtanString("MeinName"), "key4" -> FtanString("bla"))
-    FtanElement("MeinName", "key" -> FtanBoolean(true), "key2" -> FtanNull, "" -> FtanArray(FtanString("before"), FtanElement("bla" -> FtanArray()), FtanString("after"))) should_equal FtanElement("MeinName", "key" -> FtanBoolean(true), "key2" -> FtanNull, FtanElement.CONTENT_KEY -> FtanArray(FtanString("before"), FtanElement("bla" -> FtanArray()), FtanString("after")))
+    FtanElement("MeinName", "key" -> FtanBoolean(true), "key2" -> FtanNull, "" -> FtanList(FtanString("before"), FtanElement("bla" -> FtanList()), FtanString("after"))) should_equal FtanElement("MeinName", "key" -> FtanBoolean(true), "key2" -> FtanNull, FtanElement.CONTENT_KEY -> FtanList(FtanString("before"), FtanElement("bla" -> FtanList()), FtanString("after")))
     FtanElement("bla" -> FtanBoolean(true)) should_not_equal FtanElement("bla" -> FtanBoolean(false))
     FtanElement("bla" -> FtanBoolean(true)) should_not_equal FtanElement("blb" -> FtanBoolean(true))
     FtanElement("bla" -> FtanTrue, "bla2" -> FtanNull) should_equal FtanElement("bla" -> FtanTrue) //sic
@@ -40,7 +42,7 @@ class ElementTest extends ParserTest with FlatSpec {
     "<int 23>" <--> FtanElement("int", FtanElement.CONTENT_KEY -> FtanNumber(23))
     "<str \"myContent\">" <--> FtanElement("str", FtanElement.CONTENT_KEY -> FtanString("myContent"))
     "<bool false>" <--> FtanElement("bool", FtanElement.CONTENT_KEY -> FtanFalse)
-    "<array [1,2,3]>" <--> FtanElement("array", FtanElement.CONTENT_KEY -> FtanArray(FtanNumber(1), FtanNumber(2), FtanNumber(3)))
+    "<array [1,2,3]>" <--> FtanElement("array", FtanElement.CONTENT_KEY -> FtanList(FtanNumber(1), FtanNumber(2), FtanNumber(3)))
   }
 
   "Elements4" should "parse attributes correctly" in {
@@ -54,8 +56,8 @@ class ElementTest extends ParserTest with FlatSpec {
   }
 
   "Elements5" should "work when used with arrays" in {
-    "<attr=[null,<'bla<a=[[]]>'>]>" <--> FtanElement("attr" -> FtanArray(FtanNull, FtanElement(FtanElement.CONTENT_KEY -> FtanText(FtanString("bla"), FtanElement("a" -> FtanArray(FtanArray()))))))
-    "[\"bla\",<attr=[null,<'bla<a=[[]]>'>]>,\"bla2\"]" <--> FtanArray(FtanString("bla"), FtanElement("attr" -> FtanArray(FtanNull, FtanElement(FtanElement.CONTENT_KEY -> FtanText(FtanString("bla"), FtanElement("a" -> FtanArray(FtanArray())))))), FtanString("bla2"))
+    "<attr=[null,<'bla<a=[[]]>'>]>" <--> FtanElement("attr" -> FtanList(FtanNull, FtanElement(FtanElement.CONTENT_KEY -> FtanText(FtanString("bla"), FtanElement("a" -> FtanList(FtanList()))))))
+    "[\"bla\",<attr=[null,<'bla<a=[[]]>'>]>,\"bla2\"]" <--> FtanList(FtanString("bla"), FtanElement("attr" -> FtanList(FtanNull, FtanElement(FtanElement.CONTENT_KEY -> FtanText(FtanString("bla"), FtanElement("a" -> FtanList(FtanList())))))), FtanString("bla2"))
   }
 
   "Elements6" should "handle tag names correctly, when containing invalid characters" in {

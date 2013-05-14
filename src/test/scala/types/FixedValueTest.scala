@@ -25,7 +25,7 @@ class FixedValueTest extends FlatSpec with TypeTest {
   "Number Values" should "be instances of Fixed ValueType" in {
     FtanNumber(93.7) ==> new FixedValueType(FtanNumber(93.7))
     FtanNumber(93.7) !=> new FixedValueType(FtanNumber(93.8))
-    FtanNumber(93.7) !=> new FixedValueType(FtanArray(FtanNumber(93.7)))
+    FtanNumber(93.7) !=> new FixedValueType(FtanList(FtanNumber(93.7)))
     FtanNumber(0) ==> new FixedValueType(FtanNumber(0))
     FtanFalse !=> new FixedValueType(FtanNumber(0))
   }
@@ -48,24 +48,24 @@ class FixedValueTest extends FlatSpec with TypeTest {
   }
 
   "Arrays" should "be instances of Fixed ArrayType" in {
-    FtanArray(FtanTrue, FtanFalse) ==> new FixedValueType(parse("[true,false]"))
-    FtanArray(FtanString("a"), FtanString("b")) ==> new FixedValueType(parse("['a','b']"))
-    FtanArray() ==> new FixedValueType(parse("[]"))
-    FtanArray(FtanTrue, FtanFalse) !=> new FixedValueType(parse("[true,false,true]"))
-    FtanArray(FtanString("a"), FtanString("b")) !=> new FixedValueType(parse("['a']"))
-    FtanArray() !=> new FixedValueType(parse("[null]"))
+    FtanList(FtanTrue, FtanFalse) ==> new FixedValueType(parse("[true,false]"))
+    FtanList(FtanString("a"), FtanString("b")) ==> new FixedValueType(parse("[\"a\",\"b\"]"))
+    FtanList() ==> new FixedValueType(parse("[]"))
+    FtanList(FtanTrue, FtanFalse) !=> new FixedValueType(parse("[true,false,true]"))
+    FtanList(FtanString("a"), FtanString("b")) !=> new FixedValueType(parse("[\"a\"]"))
+    FtanList() !=> new FixedValueType(parse("[null]"))
   }
 
   "Elements" should  "be instances of ElementType" in {
     // TODO add whitespace tests when the rules are clear
     // TODO reinstate ignored tests when we agree that <a>==<a|> is true.
     "<>" ==> new FixedValueType(parse("< >"))
-    "<b>" ==> new FixedValueType(parse("< 'b' >"))
+    "<b>" ==> new FixedValueType(parse("< `b` >"))
     //TODO assert(parse("<b|>").isInstance(new FixedValueType(parse("< 'b' >"))), "3")
     //TODO assert(parse("<b foo=[1,2,3]|>").isInstance(new FixedValueType(parse("< 'b' foo=[1, 2, 3]>"))), "4")
     "<a=1 b=2>" ==> new FixedValueType(parse("<b=2 a=1>"))
-    "<>" !=> new FixedValueType(parse("<|z>"))
-    "<b>" !=> new FixedValueType(parse("< 'b' |c>"))
+    "<>" !=> new FixedValueType(parse("<'z'>"))
+    "<b>" !=> new FixedValueType(parse("< `b` 'c'>"))
     //TODO assert(!parse("<b|>").isInstance(new FixedValueType(parse("< 'b' >"))), "8")
     //TODO assert(!parse("<b foo=[1,2,3]|>").isInstance(new FixedValueType(parse("< 'b' foo=[1, 3, 2]>"))), "9")
     "<a=1 b=2>" !=> new FixedValueType(parse("<b=1 a=2>"))

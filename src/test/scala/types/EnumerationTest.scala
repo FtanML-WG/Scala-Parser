@@ -23,7 +23,7 @@ class EnumerationTest extends FlatSpec with TypeTest {
   "Number Values" should "be instances of Enumeration Type" in {
     FtanNumber(93.7) ==> new EnumerationType(Seq(FtanNumber(93.7)))
     FtanNumber(93.7) ==> new EnumerationType(Seq(FtanString("z"), FtanNumber(93.7)))
-    FtanNumber(93.7) !=> new EnumerationType(Seq(FtanFalse,  FtanArray(FtanNumber(93.7))))
+    FtanNumber(93.7) !=> new EnumerationType(Seq(FtanFalse,  FtanList(FtanNumber(93.7))))
   }
 
   "Strings" should "be instances of Enumeration Type" in {
@@ -33,12 +33,12 @@ class EnumerationTest extends FlatSpec with TypeTest {
   }
 
   "Arrays" should "be instances of Enumeration Type" in {
-    FtanArray(FtanTrue, FtanFalse) ==> new EnumerationType(Seq(FtanArray(), FtanArray(parse("true"), parse("false"))))
+    FtanList(FtanTrue, FtanFalse) ==> new EnumerationType(Seq(FtanList(), FtanList(parse("true"), parse("false"))))
   }
 
   "Elements" should  "be instances of ElementType" in {
     "<a b=1 c=2>" ==> new EnumerationType(
-      Seq(FtanArray(), parse("<a c=2 b=1>")))
+      Seq(FtanList(), parse("<a c=2 b=1>")))
   }
 
 

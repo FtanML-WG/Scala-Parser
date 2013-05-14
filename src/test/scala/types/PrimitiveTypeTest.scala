@@ -38,22 +38,22 @@ class PrimitiveTypeTest extends FlatSpec with TypeTest {
   }
 
   "Arrays" should "be instances of ArrayType" in {
-    FtanArray(FtanTrue, FtanFalse) ==> ArrayType
-    FtanArray(FtanString("a"), FtanString("b")) ==> ArrayType
-    FtanArray(FtanArray(), FtanString("a"), FtanString("b")) ==> ArrayType
-    FtanTrue !=> ArrayType
-    FtanArray() !=> BooleanType
-    "[]" ==> ArrayType
-    "[[],[]]" ==> ArrayType
-    "[1,2,3]" ==> ArrayType
-    FtanNull !=> ArrayType
+    FtanList(FtanTrue, FtanFalse) ==> ListType
+    FtanList(FtanString("a"), FtanString("b")) ==> ListType
+    FtanList(FtanList(), FtanString("a"), FtanString("b")) ==> ListType
+    FtanTrue !=> ListType
+    FtanList() !=> BooleanType
+    "[]" ==> ListType
+    "[[],[]]" ==> ListType
+    "[1,2,3]" ==> ListType
+    FtanNull !=> ListType
   }
 
   "Elements" should  "be instances of ElementType" in {
     "<>" ==> ElementType
     "<b>" ==> ElementType
-    "<b|>" ==> ElementType
-    "<b foo=[1,2,3]|>" ==> ElementType
+    "<b''>" ==> ElementType
+    "<b foo=[1,2,3]>" ==> ElementType
     FtanNull !=> ElementType
   }
 

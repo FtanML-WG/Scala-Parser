@@ -25,25 +25,35 @@ trait TypeTest extends ParserTest {
     
   //Allow the isInstance and matches tests
   implicit def str2TypeTest(str: String) = new {
-    def ==>(t: FtanType) = {
+    def ==>(t: FtanType) {
+      if (DEBUG) Console.println("parsing: " + str)
       val parsed = TestParser.parsing(str) 
       parsed.isInstance(t) should equal(true)
       t.matches(parsed) should equal(true)
     }
-    def !=>(t: FtanType) = {
+    def !=>(t: FtanType) {
+      if (DEBUG) Console.println("parsing: " + str)
       val parsed = TestParser.parsing(str)
       parsed.isInstance(t) should equal(false)
       t.matches(parsed) should equal(false)
     }
   }
   implicit def val2TypeTest(value: FtanValue) = new {
-    def ==>(t: FtanType) = value.isInstance(t) should equal(true)
-    def !=>(t: FtanType) = value.isInstance(t) should equal(false)
+    def ==>(t: FtanType) {
+      if (DEBUG) Console.err.println("testing: " + value + " is-instance-of " + t)
+      value.isInstance(t) should equal(true)
+    }
+    def !=>(t: FtanType) {
+      if (DEBUG) Console.err.println("testing: " + value+ " is-not-instance-of " + t)
+      value.isInstance(t) should equal(false)
+    }
   }
   implicit def type2TypeTest(t: FtanType) = new {
-    def <==(input: String) = input ==> t
-    def <==(input: FtanValue) = input ==> t
-    def <=!(input: String) = input !=> t
-    def <=!(input: FtanValue) = input !=> t
+    def <==(input: String) { input ==> t }
+    def <==(input: FtanValue) { input ==> t }
+    def <=!(input: String) { input !=> t }
+    def <=!(input: FtanValue) { input !=> t }
   }
+
+  val DEBUG = true
 }
