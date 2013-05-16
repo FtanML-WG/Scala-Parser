@@ -2,6 +2,13 @@ package ftanml.types
 
 import ftanml.objects._
 
+object ValueType extends FtanType {
+  override def matches(value: FtanValue) = {
+    true
+  }
+  override def descriptor = new FtanElement("value")
+}
+
 object StringType extends FtanType {
   override def matches(value: FtanValue) = {
     value.isInstanceOf[FtanString]
@@ -49,4 +56,11 @@ object NullType extends FtanType {
     value == FtanNull
   }
   override def descriptor = new FtanElement("null")
+}
+
+object FunctionType extends FtanType {
+  override def matches(value: FtanValue) = {
+    value.isInstanceOf[FtanFunction]
+  }
+  override def descriptor = new FtanElement("function")
 }

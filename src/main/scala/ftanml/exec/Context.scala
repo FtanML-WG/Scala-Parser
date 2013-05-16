@@ -25,10 +25,10 @@ class Context(caller: Option[Context], globals: Map[String, FtanValue], args: Se
   def evaluateParam(id: Int): FtanValue = {
     if (id == 0) {
       FtanList(args)
-    } else if (id < 0 || id > args.size - 1) {
+    } else if (id < 0 || id > args.size) {
       FtanNull
     } else {
-      args(id)
+      args(id - 1)
     }
   }
 

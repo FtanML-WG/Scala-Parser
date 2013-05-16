@@ -2,8 +2,8 @@ package ftanml.functions
 
 import ftanml.exec.Context
 import ftanml.streams.Acceptor
-import ftanml.types.{NumberType, BooleanType, AnyType, FtanType}
-import ftanml.objects.{FtanBoolean, FtanNumber, FtanFunction, FtanValue}
+import ftanml.types._
+import ftanml.objects._
 
 
 /**
@@ -92,5 +92,29 @@ object times extends BuiltInFunction("times", List(NumberType, NumberType), Numb
 object div extends BuiltInFunction("div", List(NumberType, NumberType), NumberType) {
   def call(context: Context, args: Seq[FtanValue]) = {
     FtanNumber(args(0).asInstanceOf[FtanNumber].value.divide(args(1).asInstanceOf[FtanNumber].value))
+  }
+}
+
+object subscript extends BuiltInFunction("itemAt", List(ListType, NumberType), AnyType) {
+  def call(context: Context, args: Seq[FtanValue]) = {
+    args(0).asInstanceOf[FtanList](args(1).asInstanceOf[FtanNumber].toInt)
+  }
+}
+
+object map extends BuiltInFunction("map", List(ListType, FunctionType), ListType) {
+  def call(context: Context, args: Seq[FtanValue]) = {
+    args(0).asInstanceOf[FtanList].map(context, args(1).asInstanceOf[FtanFunction])
+  }
+}
+
+object filter extends BuiltInFunction("filter", List(ListType, FunctionType), ListType) {
+  def call(context: Context, args: Seq[FtanValue]) = {
+    args(0).asInstanceOf[FtanList].filter(context, args(1).asInstanceOf[FtanFunction])
+  }
+}
+
+object attribute extends BuiltInFunction("attribute", List(ElementType, StringType), ValueType) {
+  def call(context: Context, args: Seq[FtanValue]) = {
+    args(0).asInstanceOf[FtanElement](args(1).asInstanceOf[FtanString].value)
   }
 }

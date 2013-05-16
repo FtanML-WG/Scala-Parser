@@ -2,6 +2,7 @@ package ftanml.objects
 
 import java.io.Writer
 import ftanml.streams.Acceptor
+import ftanml.exec.Context
 
 
 object FtanList extends FtanList(Nil) {
@@ -14,9 +15,25 @@ object FtanList extends FtanList(Nil) {
 case class FtanList(values: Seq[FtanValue]) extends FtanValue with SizedObject {
 
   /**
-   * _(i) selects the i'th item of the FtanArray
+   * _(i) selects the i'th item of the FtanList (zero-based)
    */
-  def apply(i : Int) = values(i)
+  def apply(i : Int): FtanValue = values(i)
+
+  /**
+   * Applies a function to each item of the list
+   */
+
+  def map(c: Context, f : FtanFunction): FtanList = {
+    FtanList(values.map {(v:FtanValue) => f(c, List(v)).asInstanceOf[FtanValue]})
+  }
+
+  /**
+   * Selects item from the list based on the value of a function
+   */
+
+  def filter(c: Context, f : FtanFunction): FtanList = {
+    FtanList(values.filter {(v:FtanValue) => f(c, List(v)).asBoolean("result of filter expression")})
+  }
 
   /**
    * Check, if this FtanArray can be output in the content area of a tag

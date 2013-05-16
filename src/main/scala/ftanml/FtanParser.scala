@@ -10,16 +10,32 @@ class FtanParser extends RegexParsers with DebugParser {
 
   override val skipWhitespace = false
 
+  /**
+   * Optional whitespace
+   */
+  def s: Parser[Option[String]] = {
+     "[ \n\r\t]*".r  ^^ {
+      case s => None
+    }
+  }
+
+  /**
+   * A keyword preceded by optional whitespace
+   */
+  def k(keyword: String): Parser[String] = {
+    s ~> keyword
+  }
+
   def _null: Parser[FtanNull.type] =
-    "null" ^^^ (FtanNull)
+    k("null") ^^^ (FtanNull)
 
   def boolean: Parser[FtanBoolean] =
-    ("true" | "false") ^^ {
+    (k("true") | k("false")) ^^ {
       value => FtanBoolean(value.toBoolean)
     }
 
   def number: Parser[FtanNumber] =
-    """-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?""".r ^^ {
+    s ~> """-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?""".r ^^ {
       value => FtanNumber(value)
     }
 
@@ -28,14 +44,8 @@ class FtanParser extends RegexParsers with DebugParser {
       value => FtanString.unescapeString("\\" + value)
     }
 
-//  def array: Parser[FtanArray] =
-//    s ~> "[" ~> s ~> (repsep((s ~> value <~ s), ",")) <~ "]" <~ s ^^ {
-//      value => FtanArray(value)
-//    }
-
   def array: Parser[FtanList] = {
-
-    s ~> "[" ~> ( rep(s ~> (value | ",")) <~ s) <~ ("]" ~ s) ^^ {
+    k("[") ~> ( rep(value | k(",")) ) <~ k("]") ^^ {
       case Nil => FtanList()
       case seq => {
         FtanList(
@@ -53,20 +63,14 @@ class FtanParser extends RegexParsers with DebugParser {
   def escapeRegex(disallowed: String) =
     ("""(?:[^\\""" + disallowed + """]|\\[bfnrt<>\"'\\]|\\x[a-fA-F0-9]+;|\\\[(.).*?\1\])*""").r
 
-  def s: Parser[Option[String]] = {
-     "[ \n\r\t]*".r  ^^ {
-      case s => None
-    }
-  }
-
   def string: Parser[FtanString] = {
-     "\"" ~> escapeRegex("\"") <~ "\""  ^^ {
+     k("\"") ~> escapeRegex("\"") <~ "\""  ^^ {
       case s => FtanString(FtanString.unescapeString(s))
     }
   }
 
   def backTickName: Parser[String] = {
-    "`" ~> escapeRegex("`") <~ "`"  ^^ {
+    k("`") ~> escapeRegex("`") <~ "`"  ^^ {
       case s => FtanString.unescapeString(s)
     }
   }
@@ -90,7 +94,7 @@ class FtanParser extends RegexParsers with DebugParser {
         }
 
     def pair: Parser[(String, FtanValue)] =
-        (s ~> name) ~ (s ~> "=" <~ s) ~ value ^^ {
+        (s ~> name) ~ k("=") ~ value ^^ {
           case name ~ sep ~ value => (name, value)
         }
 
@@ -98,7 +102,7 @@ class FtanParser extends RegexParsers with DebugParser {
       case p => Map() ++ p
     }
 
-    "<" ~> (s ~> opt(initial)) ~ (s ~> attributes) ~ (s ~> opt(value)) <~ s <~ ">" ^^ {
+    "<" ~> (s ~> opt(initial)) ~ (s ~> attributes) ~ opt(value) <~ k(">") ^^ {
       case initial ~ attributes ~ content =>
         initial match {
           case Some(e) =>
@@ -128,36 +132,89 @@ class FtanParser extends RegexParsers with DebugParser {
         value => FtanString(("" /: value)(_ + _))
       }
 
-    "'" ~> ((contentstring | element)*) <~ "'" ^^ {
+    k("'") ~> ((contentstring | element)*) <~ "'" ^^ {
       value => FtanText(value)
     }
 
   }
 
   def literal: Parser[Expression] = {
-    s ~> value ^^ {
+    value ^^ {
       v => new Literal(v)
     }
   }
 
   def parenthetical: Parser[Expression] = {
-    (s ~ "(" ~ s) ~> expression <~ (s ~ ")" ~ s) ^^ {e => e}
+    k("(") ~> expression <~ k(")")
+  }
+
+  def argumentRef: Parser[Expression] = {
+    s ~> "_[0-9]*".r ^^ {
+      case ref => {
+        if (ref.length == 1) {
+          new ParamRef(1)
+        } else {
+          new ParamRef(Integer.parseInt(ref.substring(1)))
+        }
+      }
+    }
   }
 
   def primary: Parser[Expression] = {
-    literal | parenthetical
+    literal | parenthetical | argumentRef
+  }
+
+  def attributeExpr: Parser[Expression] = {
+    primary ~ rep( k("@") ~> (name | parenthetical)) ^^ {
+      case base ~ path => {
+        (base /: path)((b: Expression,  step: AnyRef) => step match {
+          case name: String => new FunctionCall(ftanml.functions.attribute, b::Literal(FtanString(name))::Nil)
+          case expr: Expression => new FunctionCall(ftanml.functions.attribute, b::expr::Nil)
+        })
+      }
+    }
+  }
+
+  def subscript: Parser[Expression => Expression] = {
+    k("[") ~> expression <~ k("]") ^^ {
+      case sub => {
+        { (base: Expression) => new FunctionCall(ftanml.functions.subscript, base::sub::Nil)}
+      }
+    }
+  }
+
+  def argumentList: Parser[Expression => Expression] = {
+    k("(") ~> repsep(expression, k(",")) <~ k(")") ^^ {
+      case args => {
+        { (base: Expression) => new FunctionCall(base :: args)}
+      }
+    }
+  }
+
+  def postfixExpr: Parser[Expression] = {
+    attributeExpr ~ rep ( subscript | argumentList ) ^^ {
+      case base ~ suffixes => {
+        (base /: suffixes)((b:Expression, f:Expression=>Expression) => f(b))
+      }
+    }
+  }
+
+  def applicativeExpr: Parser[Expression] = {
+    postfixExpr * (
+            k("!") ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.map, a::b::Nil) } |
+            k("?") ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.filter, a::b::Nil) } )
   }
 
   def multiplicativeExpr: Parser[Expression] = {
-    primary * (
-            (s ~> "×" <~ s) ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.times, a::b::Nil) } |
-            (s ~> "÷" <~ s) ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.div, a::b::Nil) } )
+    applicativeExpr * (
+            k("×") ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.times, a::b::Nil) } |
+            k("÷") ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.div, a::b::Nil) } )
   }
 
   def additiveExpr: Parser[Expression] = {
     multiplicativeExpr * (
-            (s ~> "+" <~ s) ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.plus, a::b::Nil) } |
-            (s ~> "-" <~ s) ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.minus, a::b::Nil) } )
+            k("+") ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.plus, a::b::Nil) } |
+            k("-") ^^^ { (a:Expression, b:Expression) => new FunctionCall(ftanml.functions.minus, a::b::Nil) } )
   }
 
   def comparisonExpr: Parser[Expression] = {
@@ -181,7 +238,7 @@ class FtanParser extends RegexParsers with DebugParser {
   }
 
   def andExpr: Parser[Expression] = {
-   comparisonExpr ~ opt(s ~> "&&" ~> andExpr) ^^ {
+   comparisonExpr ~ opt(k("&&") ~> andExpr) ^^ {
       case lhs ~ rhs => {
         rhs match {
           case Some(e) => new AndExpr(lhs, e)
@@ -192,7 +249,7 @@ class FtanParser extends RegexParsers with DebugParser {
   }
 
   def expression: Parser[Expression] = {
-    andExpr ~ opt(s ~> "||" ~> expression) ^^ {
+    andExpr ~ opt(k("||") ~> expression) ^^ {
       case lhs ~ rhs => {
         rhs match {
           case Some(e) => new OrExpr(lhs, e)
@@ -203,13 +260,13 @@ class FtanParser extends RegexParsers with DebugParser {
   }
 
   def function: Parser[UserFunction] = {
-    s ~> "{" ~> expression <~ ("}" ~ s) ^^ {
+    k("{") ~> expression <~ k("}") ^^ {
       e => new UserFunction(e)
     }
   }
 
   def value: Parser[FtanValue] =
-    _null | boolean | number | string | array | element | text | function
+    _null | boolean | number | string | array | (s ~> element) | text | function
 
   def parse(exp: String): FtanValue = {
     this.value(new CharSequenceReader(exp)) match {
