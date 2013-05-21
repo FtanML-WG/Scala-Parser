@@ -53,11 +53,11 @@ class SerializerTest extends ParserTest with FlatSpec {
   "Elements" should "effectively round-trip" in {
     serialize(parse("<>")) should_equal "<>"
     serialize(parse("<a>")) should_equal "<a>"
-    serialize(parse("<'1'>")) should_equal "<'1'>"
+    serialize(parse("<'1'>")) should_equal "<\"1\">"
     serialize(parse("<a=true>")) should_equal "<a=true>"
-    serialize(parse("<'abc'>")) should_equal "<'abc'>"
-    serialize(parse("<'abc<i'd'>efg'>")) should_equal "<'abc<i 'd'>efg'>"
-    serialize(parse("<'<><a><b 'd'>'>")) should_equal "<'<><a><b 'd'>'>"
+    serialize(parse("<|abc|>")) should_equal "<|abc|>"
+    serialize(parse("<|abc<i|d|>efg|>")) should_equal "<|abc<i |d|>efg|>"
+    serialize(parse("<|<><a><b |d|>|>")) should_equal "<|<><a><b |d|>|>"
     serialize(parse("<a=\"1\"b=\"2\">")) should_equal "<a=\"1\" b=\"2\">"
     serialize(parse("<a=\"x\" b=\"y\" c=null>")) should_equal "<a=\"x\" b=\"y\">"
   }

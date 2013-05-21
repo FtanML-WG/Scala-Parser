@@ -1,12 +1,13 @@
 package ftanml.exec
 
 import ftanml.objects.{FtanNull, FtanList, FtanValue}
+import scala.collection.mutable.Map
 
 
 /**
  * Execution context for evaluating FtanSkrit expressions
  */
-class Context(caller: Option[Context], globals: Map[String, FtanValue], args: Seq[FtanValue]) {
+class Context(caller: Option[Context], globals: scala.collection.immutable.Map[String, FtanValue], args: Seq[FtanValue]) {
 
   var locals: Map[String, FtanValue] = Map()
 
@@ -19,6 +20,13 @@ class Context(caller: Option[Context], globals: Map[String, FtanValue], args: Se
           case None => throw new IllegalArgumentException("Undeclared variable " + name)
         }
       }
+    }
+  }
+
+  def setVar(name: String, value: FtanValue) {
+    locals.get(name) match {
+      case Some(v) => throw new IllegalArgumentException("Variable " + name + " is already defined")
+      case None => locals += (name -> value)
     }
   }
 

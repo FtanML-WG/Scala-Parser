@@ -23,6 +23,10 @@ private class JSONSerializer(writer : Writer, indenting : Boolean) extends Seria
       writer.append(',')
     }
     super.processStartElement(name)
+  }
+
+  override def processEndElement() {
+    super.processEndElement()
     if (!stack.isEmpty && (stack.top == startOfText)) {
       replaceTop(middleOfText)
     }

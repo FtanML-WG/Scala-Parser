@@ -2,7 +2,7 @@ package functions
 
 import org.scalatest.FlatSpec
 import util.ParserTest
-import ftanml.objects.{FtanList, FtanTrue, FtanNumber, FtanBoolean}
+import ftanml.objects._
 
 class FunctionTest extends ParserTest with FlatSpec {
   "OrFunctions" should "work" in {
@@ -63,6 +63,11 @@ class FunctionTest extends ParserTest with FlatSpec {
     "{{_0}(4, 5, 6)}" ~~> FtanList(FtanNumber(4), FtanNumber(5), FtanNumber(6))
   }
 
+  "ChainedFunctionCalls" should "work" in {
+    "{1.{_+1}()}" ~~> FtanNumber(2)
+    "{1.{_+1}().{_+1}()}" ~~> FtanNumber(3)
+  }
+
   "ListsOfFunctions" should "work" in {
     "{[{1+_}, {2+_}][1](2)}" ~~> FtanNumber(4)
   }
@@ -73,6 +78,7 @@ class FunctionTest extends ParserTest with FlatSpec {
 
   "Filtering" should "work" in {
     "{[1,2,3,4]?{_>2}}" ~~> FtanList(FtanNumber(3),FtanNumber(4))
+    "{[<e id=1><e id=2><e id=3>]?{_@id>1}!{_@id}}" ~~> FtanList(FtanNumber(2), FtanNumber(3))
   }
 
   "AttributeExtraction" should "work" in {
@@ -81,6 +87,35 @@ class FunctionTest extends ParserTest with FlatSpec {
     "{<x=2 y=<z=8>>@y@z}" ~~> FtanNumber(8)
     "{<x=2 y=[3,4,5]>@y[2]}" ~~> FtanNumber(5)
     "{(<x=2 y=[<z=8>]>@y[0])@z}" ~~> FtanNumber(8)
+  }
+
+  "LocalVariables" should "work" in {
+    "{let x=3; let y=4; x+y}" ~~> FtanNumber(7)
+    "{let inc={_+1}; let dec={_-1}; inc(inc(dec(3)))}" ~~> FtanNumber(4)
+    "{let inc={_+1}; let dec={_-1}; 3.inc().inc().dec()}" ~~> FtanNumber(4)
+    "{let add={_1+_2}; let sub={_1-_2}; 3.add(2).sub(4)}" ~~> FtanNumber(1)
+  }
+
+  "Ranges" should "work" in {
+    "{1..3}" ~~> FtanList(FtanNumber(1), FtanNumber(2), FtanNumber(3))
+    "{5.to(10)[4]}" ~~> FtanNumber(9)
+    "{(1..3)!{_+_}}" ~~> FtanList(FtanNumber(2), FtanNumber(4), FtanNumber(6))
+  }
+
+  "BuiltInFunctions" should "work" in {
+    "{<e>.name()}" ~~> FtanString("e")
+    "{<>.name()}" ~~> FtanNull
+    "{name(<e>)}"  ~~> FtanString("e")
+    "{<e 2>.content()}" ~~> FtanNumber(2)
+    "{<e>.content()}" ~~> FtanNull
+    "{-3.14.abs()}" ~~> FtanNumber("3.14")
+    "{contains(name(<abc>), name(<ab>))}" ~~> FtanTrue
+    "{startsWith(name(<abc>), name(<ab>))}" ~~> FtanTrue
+    "{endsWith(name(<abc>), name(<ab>))}" ~~> FtanFalse
+  }
+
+  "ConditionalExpressions" should "work" in {
+    "{let x=2; if x<3 then <e> else <f>}" ~~> FtanElement("e")
   }
 
   "SyntaxErrors" should "be rejected, if wrong" in {

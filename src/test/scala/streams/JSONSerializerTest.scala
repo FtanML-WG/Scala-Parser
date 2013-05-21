@@ -50,14 +50,14 @@ class JSONSerializerTest extends ParserTest with FlatSpec {
   }
 
   "Elements" should "be converted" in {
-//    serialize(parse("<>")) should_equal "{}"
-//    serialize(parse("<a>")) should_equal "{\"$name\":\"a\"}"
-//    serialize(parse("<`1`>")) should_equal "{\"$name\":\"1\"}"
-//    serialize(parse("<a=true>")) should_equal "{\"a\":true}"
-//    serialize(parse("<'abc'>")) should_equal "{\"$content\":[\"abc\"]}"
-//    serialize(parse("<'a<b>c'>")) should_equal "{\"$content\":[\"a\",{\"$name\":\"b\"},\"c\"]}"
-//    serialize(parse("<'abc<i'd'>efg'>")) should_equal "{\"$content\":[\"abc\",{\"$name\":\"i\",\"$content\":[\"d\"]},\"efg\"]}"
-    serialize(parse("<'<><a><b'd'>'>")) should_equal "{\"$content\":[{},{\"$name\":\"a\"},{\"$name\":\"b\",\"$content\":[\"d\"]}]}"
+    serialize(parse("<>")) should_equal "{}"
+    serialize(parse("<a>")) should_equal "{\"$name\":\"a\"}"
+    serialize(parse("<`1`>")) should_equal "{\"$name\":\"1\"}"
+    serialize(parse("<a=true>")) should_equal "{\"a\":true}"
+    serialize(parse("<|abc|>")) should_equal "{\"$content\":[\"abc\"]}"
+    serialize(parse("<|a<b>c|>")) should_equal "{\"$content\":[\"a\",{\"$name\":\"b\"},\"c\"]}"
+    serialize(parse("<|abc<i|d|>efg|>")) should_equal "{\"$content\":[\"abc\",{\"$name\":\"i\",\"$content\":[\"d\"]},\"efg\"]}"
+    serialize(parse("<|<><a><b|d|>|>")) should_equal "{\"$content\":[{},{\"$name\":\"a\"},{\"$name\":\"b\",\"$content\":[\"d\"]}]}"
     serialize(parse("<a=\"1\" b=\"2\">")) should_equal "{\"a\":\"1\",\"b\":\"2\"}"
     serialize(parse("<a=\"x\" b=\"y\">")) should_equal "{\"a\":\"x\",\"b\":\"y\"}"
   }

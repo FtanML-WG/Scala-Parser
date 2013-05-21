@@ -130,7 +130,7 @@ class TypeFactoryTest extends FlatSpec with TypeTest {
     TestParser.parse("<e a=[]>") !=> theType("<element form=<e a=<number>>>")
     TestParser.parse("<e b=5>") ==> theType("<element form=<e a=<nullable<number le=3>>>>")
     TestParser.parse("<e a=3>") ==> theType("<element form=<a=<number le=3>>>")
-    TestParser.parse("<'the<sub>text'>") ==> theType("<element form=<<text>>>")
+    TestParser.parse("<|the<sub>text|>") ==> theType("<element form=<<text>>>")
   }
 
   "NamedElements" should "be instances of element types" in {

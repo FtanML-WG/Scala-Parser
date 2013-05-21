@@ -6,7 +6,7 @@ object FtanElement extends FtanElement(Map[String,  FtanValue]()) {
 
   val CONTENT_KEY = ""
 
-  val VALID_NAME = "[\\p{Alpha}\\p{Digit}_:\\$]+".r
+  val VALID_NAME = "\\p{Alpha}[\\p{Alpha}\\p{Digit}_:\\$]*".r
 
   def apply() = new FtanElement()
 

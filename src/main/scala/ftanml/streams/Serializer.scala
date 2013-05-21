@@ -34,7 +34,7 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
   }
 
   def processString(value: String) {
-    if (!stack.isEmpty && (stack.top == startOfText)) {
+    if (!stack.isEmpty && (stack.top == startOfText || stack.top == middleOfText)) {
       writer.append(escapedValue(value, '<'))
       replaceTop(middleOfText)
     } else {
@@ -126,13 +126,13 @@ class Serializer(writer: Writer, indenting: Boolean) extends Acceptor {
 
   def processStartText() {
     preValue()
-    writer.append("'")
+    writer.append("|")
     stack.push(startOfText)
   }
 
   def processEndText() {
     stack.pop()
-    writer.append("'")
+    writer.append("|")
     postValue()
   }
 

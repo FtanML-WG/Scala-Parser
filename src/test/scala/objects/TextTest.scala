@@ -26,10 +26,10 @@ class TextTest extends ParserTest with WordSpec {
 
   "Text2" should {
     "be parsed correctly" in {
-      "'bla'" <-- FtanText("bla") <-- ("'bla'")
-      "'<e>'" <-- FtanText(FtanElement("e")) <-- "'<e>'"
-      "'<f>'" <--> FtanText(FtanElement("f"))
-      """'bla"'""" <--> FtanText("bla\"")
+      "|bla|" <-- FtanText("bla") <-- ("|bla|")
+      "|<e>|" <-- FtanText(FtanElement("e")) <-- "|<e>|"
+      "|<f>|" <--> FtanText(FtanElement("f"))
+      """|bla"|""" <--> FtanText("bla\"")
     }
   }
 
@@ -45,9 +45,9 @@ class TextTest extends ParserTest with WordSpec {
   "Text3" should {
     "escape correctly, when used in content area" in {
       def createContentElement(content: String) = FtanElement(FtanElement.CONTENT_KEY -> FtanText(content))
-      "<'bla'>" <--> createContentElement("bla")
-      "<'ble\\<'>" <--> createContentElement("ble<")
-      "<'blu\\<\\\\\\>'>" <--> createContentElement("blu<\\>")
+      "<|bla|>" <--> createContentElement("bla")
+      "<|ble\\<|>" <--> createContentElement("ble<")
+      "<|blu\\<\\\\\\>|>" <--> createContentElement("blu<\\>")
     }
   }
 
@@ -55,19 +55,19 @@ class TextTest extends ParserTest with WordSpec {
 
   "Text4" should {
     "compare correctly, when parsed" in {
-      TestParser.parsing("'abc'") should_equal TestParser.parsing("'abc'")
-      TestParser.parsing("'bbc\"'") should_equal TestParser.parsing("'bbc\\\"'")
-      TestParser.parsing("'cbc '") should_equal TestParser.parsing("'cbc\\x20;'")
-      TestParser.parsing("'dbc\t'") should_equal TestParser.parsing("'dbc\\t'")
-      TestParser.parsing("'<e>'") should_equal TestParser.parsing("'<e>'")
-      TestParser.parsing("'<f>'") should_equal TestParser.parsing("'<f >'")
-      TestParser.parsing("'< g >abc< g >'") should_equal TestParser.parsing("'<g>abc<g>'")
-      TestParser.parsing("'<h  a = 12 >abc'") should_equal TestParser.parsing("'<h a=12>abc'")
+      TestParser.parsing("|abc|") should_equal TestParser.parsing("|abc|")
+      TestParser.parsing("|bbc\"|") should_equal TestParser.parsing("|bbc\\\"|")
+      TestParser.parsing("|cbc |") should_equal TestParser.parsing("|cbc\\x20;|")
+      TestParser.parsing("|dbc\t|") should_equal TestParser.parsing("|dbc\\t|")
+      TestParser.parsing("|<e>|") should_equal TestParser.parsing("|< e >|")
+      TestParser.parsing("|<f>|") should_equal TestParser.parsing("|<f >|")
+      TestParser.parsing("|< g >abc< g >|") should_equal TestParser.parsing("|<g>abc<g>|")
+      TestParser.parsing("|<h  a = 12 >abc|") should_equal TestParser.parsing("|<h a=12>abc|")
 
-      TestParser.parsing("'abc'") should_not_equal TestParser.parsing("'abc '")
-      TestParser.parsing("' abc'") should_not_equal TestParser.parsing("'abc '")
-      TestParser.parsing("'abc<d>'") should_not_equal TestParser.parsing("'abc <d>'")
-      TestParser.parsing("'abc<d>'") should_not_equal TestParser.parsing("'abc<e>'")
+      TestParser.parsing("|abc|") should_not_equal TestParser.parsing("|abc |")
+      TestParser.parsing("| abc|") should_not_equal TestParser.parsing("|abc |")
+      TestParser.parsing("|abc<d>|") should_not_equal TestParser.parsing("|abc <d>|")
+      TestParser.parsing("|abc<d>|") should_not_equal TestParser.parsing("|abc<e>|")
     }
   }
 

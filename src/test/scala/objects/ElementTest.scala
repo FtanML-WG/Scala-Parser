@@ -38,7 +38,7 @@ class ElementTest extends ParserTest with FlatSpec {
     "<`!!`>" <--> FtanElement("!!")
     "<`\\x20ac;`>" --> FtanElement("€")
     "<myTagName>" <--> FtanElement("myTagName")
-    "<'myContent'>" <--> FtanElement(FtanElement.CONTENT_KEY -> FtanText("myContent"))
+    "<|myContent|>" <--> FtanElement(FtanElement.CONTENT_KEY -> FtanText("myContent"))
     "<int 23>" <--> FtanElement("int", FtanElement.CONTENT_KEY -> FtanNumber(23))
     "<str \"myContent\">" <--> FtanElement("str", FtanElement.CONTENT_KEY -> FtanString("myContent"))
     "<bool false>" <--> FtanElement("bool", FtanElement.CONTENT_KEY -> FtanFalse)
@@ -56,8 +56,8 @@ class ElementTest extends ParserTest with FlatSpec {
   }
 
   "Elements5" should "work when used with arrays" in {
-    "<attr=[null,<'bla<a=[[]]>'>]>" <--> FtanElement("attr" -> FtanList(FtanNull, FtanElement(FtanElement.CONTENT_KEY -> FtanText(FtanString("bla"), FtanElement("a" -> FtanList(FtanList()))))))
-    "[\"bla\",<attr=[null,<'bla<a=[[]]>'>]>,\"bla2\"]" <--> FtanList(FtanString("bla"), FtanElement("attr" -> FtanList(FtanNull, FtanElement(FtanElement.CONTENT_KEY -> FtanText(FtanString("bla"), FtanElement("a" -> FtanList(FtanList())))))), FtanString("bla2"))
+    "<attr=[null,<|bla<a=[[]]>|>]>" <--> FtanElement("attr" -> FtanList(FtanNull, FtanElement(FtanElement.CONTENT_KEY -> FtanText(FtanString("bla"), FtanElement("a" -> FtanList(FtanList()))))))
+    "[\"bla\",<attr=[null,<|bla<a=[[]]>|>]>,\"bla2\"]" <--> FtanList(FtanString("bla"), FtanElement("attr" -> FtanList(FtanNull, FtanElement(FtanElement.CONTENT_KEY -> FtanText(FtanString("bla"), FtanElement("a" -> FtanList(FtanList())))))), FtanString("bla2"))
   }
 
   "Elements6" should "handle tag names correctly, when containing invalid characters" in {
@@ -68,14 +68,14 @@ class ElementTest extends ParserTest with FlatSpec {
     "<`€`>" <--> FtanElement("€")
     "<`.2`>" <--> FtanElement(".2")
 
-    "<a123:4_5 'myContent<innerName>afterContent'>" <--> FtanElement("a123:4_5", FtanElement.CONTENT_KEY -> FtanText(FtanString("myContent"), FtanElement("innerName"), FtanString("afterContent")))
-    "<`.12` 'myContent<innerName>afterContent'>" <--> FtanElement(".12", FtanElement.CONTENT_KEY -> FtanText(FtanString("myContent"), FtanElement("innerName"), FtanString("afterContent")))
-    "<`1.2` 'myContent<innerName>afterContent'>" <--> FtanElement("1.2", FtanElement.CONTENT_KEY -> FtanText(FtanString("myContent"), FtanElement("innerName"), FtanString("afterContent")))
+    "<a123:4_5 |myContent<innerName>afterContent|>" <--> FtanElement("a123:4_5", FtanElement.CONTENT_KEY -> FtanText(FtanString("myContent"), FtanElement("innerName"), FtanString("afterContent")))
+    "<`.12` |myContent<innerName>afterContent|>" <--> FtanElement(".12", FtanElement.CONTENT_KEY -> FtanText(FtanString("myContent"), FtanElement("innerName"), FtanString("afterContent")))
+    "<`1.2` |myContent<innerName>afterContent|>" <--> FtanElement("1.2", FtanElement.CONTENT_KEY -> FtanText(FtanString("myContent"), FtanElement("innerName"), FtanString("afterContent")))
   }
 
   "Elements7" should "handle nested content tags correctly" in {
-    "<`1.2` attr1=1.3 attr2=false 'myContent<innerName>afterContent'>" <--> FtanElement("1.2", "attr1" -> FtanNumber(1.3), "attr2" -> FtanFalse, FtanElement.CONTENT_KEY -> FtanText(FtanString("myContent"), FtanElement("innerName"), FtanString("afterContent")))
-    "<a '<b><c '<d>'>'>" <--> FtanElement("a", "" -> FtanText(FtanElement("b"), FtanElement("c", "" -> FtanText(FtanElement("d")))))
+    "<`1.2` attr1=1.3 attr2=false |myContent<innerName>afterContent|>" <--> FtanElement("1.2", "attr1" -> FtanNumber("1.3"), "attr2" -> FtanFalse, FtanElement.CONTENT_KEY -> FtanText(FtanString("myContent"), FtanElement("innerName"), FtanString("afterContent")))
+    "<a |<b><c |<d>|>|>" <--> FtanElement("a", "" -> FtanText(FtanElement("b"), FtanElement("c", "" -> FtanText(FtanElement("d")))))
   }
   // TODO: reinstate below tests when the spec is clearer
 //
@@ -118,7 +118,7 @@ class ElementTest extends ParserTest with FlatSpec {
 
     TestParser.parsing("<a>") should_not_equal TestParser.parsing("<`a `>")
     TestParser.parsing("<b <>>") should_not_equal TestParser.parsing("<`b` [<>]>")
-    TestParser.parsing("<c ''>") should_not_equal TestParser.parsing("<`c` \"\">")
+    TestParser.parsing("<c ||>") should_not_equal TestParser.parsing("<`c` \"\">")
   }
 
   "Elements13" should "be rejected, if wrong" in {

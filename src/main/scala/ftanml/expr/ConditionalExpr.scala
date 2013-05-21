@@ -16,6 +16,6 @@ class ConditionalExpr(_if: Expression, _then: Expression, _else: Expression) ext
   }
 
   override def toString = {
-    "if " + _if.toString + " then " + _then.toString + " else " + _else.toString()
+    "if " + _if.toString + " then " + _then.toString + " else " + _else.toString
   }
 }

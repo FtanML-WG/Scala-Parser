@@ -25,7 +25,7 @@ class StringTest extends ParserTest with WordSpec {
     "be parsed correctly" in {
       "\"bla\"" <--> FtanString("bla")
       "\"blu'\"" <--> FtanString("blu'")
-      """"<>|\"'\\\b\f\n\r\t€"""" <--> FtanString("<>|\"'\\\b\f\n\r\t€")
+      """"<>|\"'\\\n\r\t€"""" <--> FtanString("<>|\"'\\\n\r\t€")
     }
   }
 
@@ -64,7 +64,9 @@ class StringTest extends ParserTest with WordSpec {
 
    "Strings6" should {
     "compare correctly, when parsed" in {
-      TestParser.parsing("\"abc\"") should_equal TestParser.parsing("\"abc\"")
+      TestParser.parsing("\"abc\"") should_equal TestParser.parsing("'abc'")
+      TestParser.parsing("'abc\\  '") should_equal TestParser.parsing("'abc'")
+      TestParser.parsing("'abc\\S'") should_equal TestParser.parsing("'abc\\xa0;'")
       TestParser.parsing("\"zbc\\[*A*]\"") should_equal TestParser.parsing("\"zbcA\"")
       TestParser.parsing(""""€"""") should_equal TestParser.parsing(""""\x20ac;"""")
       TestParser.parsing(""""€"""") should_equal TestParser.parsing(""""\x20AC;"""")
@@ -72,8 +74,8 @@ class StringTest extends ParserTest with WordSpec {
       TestParser.parsing("""<"ble\<">""") should_equal TestParser.parsing("""<"ble<">""")
 
       TestParser.parsing("\"abw\"") should_not_equal TestParser.parsing("\"abW\"")
-      TestParser.parsing("\"abx\"") should_not_equal TestParser.parsing("\"abx \"")
-      TestParser.parsing("\"aby\"") should_not_equal TestParser.parsing("'aby'")
+      TestParser.parsing("\"abx\"") should_not_equal TestParser.parsing("'abx '")
+      TestParser.parsing("\"aby\"") should_not_equal TestParser.parsing("|aby|")
     }
   }
 

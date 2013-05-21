@@ -10,7 +10,7 @@ class ListTest extends ParserTest with FlatSpec {
   "Lists" should "be compared correctly (equals, hashCode)" in {
     FtanList() should_equal FtanList()
     FtanList(FtanString("bla")) should_equal FtanList(FtanString("bla"))
-    FtanList(FtanNumber(2.34)) should_equal FtanList(FtanNumber(2.34))
+    FtanList(FtanNumber("2.34")) should_equal FtanList(FtanNumber("2.34"))
     FtanList(FtanBoolean(true), FtanNull) should_equal FtanList(FtanBoolean(true), FtanNull)
     FtanList(FtanBoolean(true), FtanNull) should_not_equal FtanList(FtanBoolean(true))
     FtanList(FtanBoolean(true), FtanNull) should_not_equal FtanList(FtanBoolean(true), FtanNull, FtanNull)
@@ -26,16 +26,16 @@ class ListTest extends ParserTest with FlatSpec {
   "Lists2" should "be parsed correctly" in {
     "[]" <--> FtanList()
     "[\"bla\"]" <--> FtanList(FtanString("bla"))
-    "[2.34]" <--> FtanList(FtanNumber(2.34))
-    "[2.34,23.4]" <-- FtanList(FtanNumber(2.34), FtanNumber(23.4)) <-- "[2.34,2.34e1]"
-    "[1.23,'bl\"a',false,null,[1,null]]" <--
-      FtanList(FtanNumber(1.23), FtanText(FtanString("bl\"a")), FtanBoolean(false), FtanNull, FtanList(FtanNumber(1), FtanNull)) <-- (
-        "[1.23,'bl\"a',false,null,[1.0,null]]")
-    "[[[1.2]]]" <--> FtanList(FtanList(FtanList(FtanNumber(1.2))))
+    "[2.34]" <--> FtanList(FtanNumber("2.34"))
+    "[2.34,23.4]" <-- FtanList(FtanNumber("2.34"), FtanNumber("23.4")) <-- "[2.34,2.34e1]"
+    "[1.23,|bl\"a|,false,null,[1,null]]" <--
+      FtanList(FtanNumber("1.23"), FtanText(FtanString("bl\"a")), FtanBoolean(false), FtanNull, FtanList(FtanNumber(1), FtanNull)) <-- (
+        "[1.23,|bl\"a|,false,null,[1.0,null]]")
+    "[[[1.2]]]" <--> FtanList(FtanList(FtanList(FtanNumber("1.2"))))
     "[[[]],[]]" <-- FtanList(FtanList(FtanList()), FtanList()) <-- (
       "[[[]],[]]", " [ [ [ ] ] , [ ] ] ")
     "[null,[0.1,[\"0.2\"],true],false,[0.5],0.6]" <--
-      FtanList(FtanNull, FtanList(FtanNumber(0.1), FtanList(FtanString("0.2")), FtanBoolean(true)), FtanBoolean(false), FtanList(FtanNumber(0.5)), FtanNumber(0.6)) <--
+      FtanList(FtanNull, FtanList(FtanNumber("0.1"), FtanList(FtanString("0.2")), FtanBoolean(true)), FtanBoolean(false), FtanList(FtanNumber("0.5")), FtanNumber("0.6")) <--
       ("[null,[0.1,[\"0.2\"],true],false,[0.5],0.6]", "[null, [1e-1 ,[\"0.2\" ] ,true],false,[0.05e1],0.06E+1]")
   }
 

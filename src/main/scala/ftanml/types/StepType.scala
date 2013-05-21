@@ -14,3 +14,5 @@ class StepType(increment : java.math.BigDecimal) extends FtanType {
 
   def descriptor = new FtanElement().setAttribute("step", FtanNumber(increment))
 }
+
+object IntegerType extends StepType(java.math.BigDecimal.valueOf(1))

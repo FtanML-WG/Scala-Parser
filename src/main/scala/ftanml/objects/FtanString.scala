@@ -13,19 +13,20 @@ object FtanString extends FtanString("") {
    * sequences expanded.
    */
   def unescapeString(input: String): String = {
-    val r = """\\[bfnrt<>"'\\]|\\x([a-fA-F0-9]+);|\\\[(.)(.*?)\2\]""".r
+    val r = """\\[snrtS<>"'{\\]|\\x([a-fA-F0-9]+);|\\\[(.)(.*?)\2\]|\\[ \n\r\t]+""".r
     r.replaceAllIn(input, m =>
       Regex.quoteReplacement(
         m.matched.charAt(1) match {
           case '"' => "\""
           case '\'' => "\'"
           case '\\' => "\\"
-          case '/' => "/"
-          case 'b' => "\b"
-          case 'f' => "\f"
+          case '|' => "|"
+          case '{' => "{"
           case 'n' => "\n"
           case 'r' => "\r"
           case 't' => "\t"
+          case 's' => " "
+          case 'S' => "\u00A0"
           case '<' => "<"
           case '>' => ">"
           case 'x' => Unicode.surrogatePair(Integer.parseInt(m.group(1), 16))
@@ -42,14 +43,12 @@ case class FtanString(value: String) extends FtanValue with SizedObject with Tex
   private def escapedValue(usedQuote: Char): String = {
     def escapeChar(input: Char): String = input match {
       case '\\' => "\\\\"
-      case '\b' => "\\b"
-      case '\f' => "\\f"
       case '\n' => "\\n"
       case '\r' => "\\r"
       case '\t' => "\\t"
       case char if char == usedQuote => "\\" + usedQuote
       case other =>
-        // TODO Allow the user to set a flag which generates a \\uXXXX
+        // TODO Allow the user to set a flag which generates a \\xHHHH
         // sequence for non standard characters
         other.toString
     }

@@ -16,6 +16,13 @@ object StringType extends FtanType {
   override def descriptor = new FtanElement("string")
 }
 
+object NullableStringType extends FtanType {
+  override def matches(value: FtanValue) = {
+    value.isInstanceOf[FtanString] || value == FtanNull
+  }
+  override def descriptor = new FtanElement("nullable").setContent(new FtanElement("string"))
+}
+
 object NumberType extends FtanType {
   override def matches(value: FtanValue) = {
     value.isInstanceOf[FtanNumber]

@@ -6,7 +6,7 @@ import org.scalatest.Suite
 
 import ftanml.FtanParser
 import ftanml.objects.{FtanFunction, FtanValue}
-import ftanml.exec.Context
+import ftanml.exec.{BuiltInGlobals, Context}
 
 /**
  * Inheriting from this class allows a very easy way to write test cases.
@@ -47,11 +47,12 @@ trait ParserTest extends TestHelper {
   object TestParser extends FtanParser {
     //Add an easy method for parsing a string
     def parsing(s: String): FtanValue = {
-      //The phrase parser wrapper makes sure, that the whole input string is consumed
-      //(so "truexyz" isn't parsed correctly as "true", because there is xyz left)
+      //The phrase parser wrapper makes sure that the whole input string is consumed
+      //(so "truexyz" isn't parsed correctly as "true", because there is xyz left).
+      //But we have to trim trailing whitespace otherwise phrase() reports an error.
       val phraseParser = phrase(value)
       //Do the parsing
-      val input = new CharSequenceReader(s)
+      val input = new CharSequenceReader(s.trim())
       phraseParser(input) match {
         case Success(t, _) => t
         case NoSuccess(msg, _) => throw new IllegalArgumentException(
@@ -84,7 +85,7 @@ trait ParserTest extends TestHelper {
     def ~~>(value: FtanValue) = {
       val parsed = TestParser.parsing(str)
       parsed match {
-        case f: FtanFunction => f(new Context(None, Map(), List()), List()) should_equal value
+        case f: FtanFunction => f(new Context(None, BuiltInGlobals.map, List()), List()) should_equal value
         case _ => throw new IllegalArgumentException(str + " is not a function")
       }
       value
